@@ -42,4 +42,18 @@ again later and it continues where it left off.
 
 ## Results
 
-_Run the harness and paste the printed table here._
+Retrieval stage on the AquaPilot X3 golden set (30 answerable questions, all-MiniLM-L6-v2, threshold 0.3, top-5), run in Google Colab:
+
+| Chunk (words) | Overlap | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR |
+|---|---|---|---|---|---|---|
+| **100** | 10 | 36 | **67%** | **87%** | **93%** | **0.77** |
+| 200 | 20 | 18 | 57% | 70% | 70% | 0.62 |
+| 300 | 30 | 12 | 53% | 60% | 70% | 0.58 |
+| 500 (previous default) | 50 | 8 | 47% | 57% | 57% | 0.51 |
+
+**Finding:** with 500-word chunks, recall@5 equals recall@3 because long chunks dilute the cosine
+similarity below the 0.3 relevance threshold, so relevant chunks are filtered out before the top 5.
+Switching to 100-word chunks raised recall@5 from 57% to 93% and MRR from 0.51 to 0.77, and the app now
+uses 100-word chunks by default (`CHUNK_SIZE` / `CHUNK_OVERLAP` in `config.py`).
+
+_Generation-stage results (correctness, faithfulness, refusal accuracy) will be added after the Groq run._

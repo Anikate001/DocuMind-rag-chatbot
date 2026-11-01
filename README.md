@@ -30,8 +30,8 @@ DocuMind lets you **upload PDF documents** and **ask questions** about their con
 │    ▼                                                        │
 │  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
 │  │  Extract Text │──▶│ Chunk Text   │──▶│  Embed with  │    │
-│  │  (PyPDF2)     │   │ (500 words,  │   │  MiniLM-L6   │    │
-│  │               │   │  50 overlap) │   │  (384-dim)   │    │
+│  │  (PyPDF2)     │   │ (100 words,  │   │  MiniLM-L6   │    │
+│  │               │   │  10 overlap) │   │  (384-dim)   │    │
 │  └──────────────┘   └──────────────┘   └──────┬───────┘    │
 │                                                │            │
 │                                         ┌──────▼───────┐    │
@@ -62,7 +62,7 @@ DocuMind lets you **upload PDF documents** and **ask questions** about their con
 | Component | Method / Technology | Why This Choice |
 |-----------|-------------------|-----------------|
 | **Text Extraction** | PyPDF2 | Extracts text from PDF pages without external APIs |
-| **Chunking** | Sliding window (500 words, 50 overlap) | Overlap ensures answers spanning chunk boundaries are still retrievable |
+| **Chunking** | Sliding window (100 words, 10 overlap) | Overlap ensures answers spanning chunk boundaries are still retrievable |
 | **Embeddings** | `all-MiniLM-L6-v2` (HuggingFace) | Free, local, 384-dim vectors — no API cost, runs on CPU |
 | **Vector Database** | Supabase pgvector | Free PostgreSQL with vector similarity search built-in |
 | **Similarity Search** | Cosine similarity via `match_chunks` RPC | Finds the most semantically relevant chunks for any query |
@@ -264,7 +264,7 @@ streamlit run app.py
 
 ### 5. Chunk Boundary Information Loss
 **Challenge:** Naive text splitting can cut sentences mid-thought, making chunks lose context.  
-**Solution:** Implemented **overlapping chunks** (500 words with 50-word overlap), ensuring that information spanning chunk boundaries is captured in at least one chunk.
+**Solution:** Implemented **overlapping chunks** (100 words with 10-word overlap, chosen with the eval harness), ensuring that information spanning chunk boundaries is captured in at least one chunk.
 
 ### 6. Streamlit UI Limitations
 **Challenge:** Streamlit doesn't support custom JavaScript, making it hard to create premium interactive UIs.  
@@ -309,5 +309,15 @@ DocuMind ships with an evaluation harness (`eval/`) that scores retrieval (Recal
 (correctness, faithfulness, refusal accuracy on unanswerable questions) against a 40-question golden set,
 and compares chunking strategies. See [`eval/README.md`](eval/README.md) to run it.
 
-_Results table: coming after the first run._
+| Chunk (words) | Overlap | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR |
+|---|---|---|---|---|---|---|
+| **100** | 10 | 36 | **67%** | **87%** | **93%** | **0.77** |
+| 200 | 20 | 18 | 57% | 70% | 70% | 0.62 |
+| 300 | 30 | 12 | 53% | 60% | 70% | 0.58 |
+| 500 (previous default) | 50 | 8 | 47% | 57% | 57% | 0.51 |
+
+**Finding:** with 500-word chunks, recall@5 equals recall@3 because long chunks dilute the cosine
+similarity below the 0.3 relevance threshold, so relevant chunks are filtered out before the top 5.
+Switching to 100-word chunks raised recall@5 from 57% to 93% and MRR from 0.51 to 0.77, and the app now
+uses 100-word chunks by default (`CHUNK_SIZE` / `CHUNK_OVERLAP` in `config.py`).
 

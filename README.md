@@ -300,3 +300,14 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 *Built by [Anikate001](https://github.com/Anikate001)*
+
+---
+
+## 📏 Evaluation
+
+DocuMind ships with an evaluation harness (`eval/`) that scores retrieval (Recall@5, MRR) and answers
+(correctness, faithfulness, refusal accuracy on unanswerable questions) against a 40-question golden set,
+and compares chunking strategies. See [`eval/README.md`](eval/README.md) to run it.
+
+_Results table: coming after the first run._
+

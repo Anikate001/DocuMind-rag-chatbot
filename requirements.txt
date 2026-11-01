@@ -1,11 +1,11 @@
+# CPU-only PyTorch keeps the Streamlit Cloud build small (the default CUDA build is ~2 GB)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 streamlit
 supabase
 groq
-langchain
-langchain-community
 sentence-transformers
-pypdf2
+PyPDF2
 python-dotenv
 numpy
-torch
-transformers
+requests

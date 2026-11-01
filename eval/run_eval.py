@@ -23,8 +23,8 @@ Stage 2 - generation (uses Groq, runs for the configs you choose, default = app 
   refusal acc.  share of unanswerable questions where DocuMind declined instead of making something up
 
 Usage (from the repo root, with GROQ_API_KEY in .env):
-  python eval/run_eval.py --pdf eval/attention_is_all_you_need.pdf
-  python eval/run_eval.py --pdf eval/attention_is_all_you_need.pdf --retrieval-only
+  python eval/run_eval.py                    # default test PDF + golden set
+  python eval/run_eval.py --retrieval-only   # free, no Groq calls
 
 Groq's free tier has daily token limits. Every LLM call is cached in eval/cache.json,
 so if you hit a 429 limit just run the same command again later and it resumes.
@@ -48,10 +48,10 @@ EVAL_DIR = Path(__file__).resolve().parent
 CACHE_FILE = EVAL_DIR / "cache.json"
 
 CONFIGS = [  # (chunk_size_words, overlap_words)
-    (150, 15),
+    (100, 10),
+    (200, 20),
     (300, 30),
     (500, 50),   # current app default
-    (800, 80),
 ]
 APP_DEFAULT = (500, 50)
 TOP_K = 5
@@ -93,17 +93,16 @@ def contains_evidence(chunk_text_, evidence):
 
 
 def retrieval_metrics(embedder, rows, vecs, golden):
-    hits, rr, n = 0, 0.0, 0
+    ranks = []
     for item in golden:
         if not item["answerable"]:
             continue
-        n += 1
         got = retrieve(embedder, rows, vecs, item["question"])
-        rank = next((i + 1 for i, c in enumerate(got) if contains_evidence(c["content"], item["evidence"])), None)
-        if rank:
-            hits += 1
-            rr += 1.0 / rank
-    return {f"recall@{TOP_K}": round(hits / n, 3), "mrr": round(rr / n, 3)}
+        ranks.append(next((i + 1 for i, c in enumerate(got) if contains_evidence(c["content"], item["evidence"])), None))
+    n = len(ranks)
+    rec = lambda k: round(sum(1 for r in ranks if r and r <= k) / n, 3)
+    return {"recall@1": rec(1), "recall@3": rec(3), f"recall@{TOP_K}": rec(TOP_K),
+            "mrr": round(sum(1.0 / r for r in ranks if r) / n, 3)}
 
 
 # ----------------------------------------------------------------------------- LLM calls (cached)
@@ -211,7 +210,7 @@ def generation_metrics(embedder, rows, vecs, golden, tag):
 # ----------------------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pdf", required=True)
+    ap.add_argument("--pdf", default=str(EVAL_DIR / "aquapilot_x3_manual.pdf"))
     ap.add_argument("--golden", default=str(EVAL_DIR / "golden_set.json"))
     ap.add_argument("--retrieval-only", action="store_true", help="skip Groq calls (free)")
     ap.add_argument("--gen-configs", default="default,best",
@@ -239,10 +238,10 @@ def main():
         m = retrieval_metrics(embedder, rows, vecs, golden)
         m.update(chunk_size=size, overlap=overlap, n_chunks=len(rows))
         results.append(m)
-        print(f"  chunk={size:<4} overlap={overlap:<3} chunks={len(rows):<4} "
-              f"recall@{TOP_K}={m[f'recall@{TOP_K}']:.2f}  MRR={m['mrr']:.2f}")
+        print(f"  chunk={size:<4} overlap={overlap:<3} chunks={len(rows):<4} recall@1={m['recall@1']:.2f}  "
+              f"recall@3={m['recall@3']:.2f}  recall@{TOP_K}={m[f'recall@{TOP_K}']:.2f}  MRR={m['mrr']:.2f}")
 
-    best = max(results, key=lambda r: (r[f"recall@{TOP_K}"], r["mrr"]))
+    best = max(results, key=lambda r: (r[f"recall@{TOP_K}"], r["mrr"], r["recall@1"]))
     print(f"\nBest retrieval config: chunk={best['chunk_size']}, overlap={best['overlap']}")
 
     if not args.retrieval_only:
@@ -260,12 +259,13 @@ def main():
     out = EVAL_DIR / "results.json"
     out.write_text(json.dumps(results, indent=2))
 
-    print("\n| Chunk (words) | Overlap | Chunks | Recall@5 | MRR | Correct | Faithful | Refusal |")
-    print("|---|---|---|---|---|---|---|---|")
+    print("\n| Chunk (words) | Overlap | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR | Correct | Faithful | Refusal |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
     for r in results:
         f = lambda k: f"{r[k]:.0%}" if k in r else "-"
-        print(f"| {r['chunk_size']} | {r['overlap']} | {r['n_chunks']} | {r[f'recall@{TOP_K}']:.0%} | "
-              f"{r['mrr']:.2f} | {f('correctness')} | {f('faithfulness')} | {f('refusal_accuracy')} |")
+        print(f"| {r['chunk_size']} | {r['overlap']} | {r['n_chunks']} | {r['recall@1']:.0%} | {r['recall@3']:.0%} | "
+              f"{r[f'recall@{TOP_K}']:.0%} | {r['mrr']:.2f} | {f('correctness')} | {f('faithfulness')} | "
+              f"{f('refusal_accuracy')} |")
     print(f"\nSaved {out.relative_to(ROOT)} - paste the table into README.md and send it to Claude.")
 
 

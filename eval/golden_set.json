@@ -1,364 +1,377 @@
 [
   {
-    "question": "How many identical layers are in the Transformer encoder stack?",
-    "answer": "6 identical layers (N = 6).",
+    "question": "What is the maximum number of zones the AquaPilot X3 can control with expansion modules?",
+    "answer": "48 zones, using two ZX-16 expansion modules (16 built-in plus 16 per module).",
     "evidence": [
       [
-        "stack of",
-        "identical layers"
+        "48 zones"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What is the dimension of the model's outputs (d_model)?",
-    "answer": "512.",
+    "question": "Does the X3 support 5 GHz Wi-Fi networks?",
+    "answer": "No. It supports 2.4 GHz Wi-Fi only (802.11 b/g/n).",
     "evidence": [
       [
-        "dimension",
-        "512"
+        "5 GHz networks are not supported"
+      ],
+      [
+        "5 GHz-only router"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How many attention heads does the base Transformer use?",
-    "answer": "8 parallel attention heads (h = 8).",
+    "question": "What is the maximum output current per zone?",
+    "answer": "0.65 A per zone.",
     "evidence": [
       [
-        "parallel attention layers"
+        "0.65 A"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What are d_k and d_v set to in multi-head attention?",
-    "answer": "64 each (d_model / h = 64).",
+    "question": "How long does the X3 keep its schedule without power, and what does it use to do that?",
+    "answer": "Up to 72 hours, using a supercapacitor (it has no battery).",
     "evidence": [
       [
-        "parallel attention layers",
-        "64"
+        "supercapacitor",
+        "72 hours"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What is the inner-layer dimensionality of the position-wise feed-forward network?",
-    "answer": "2048.",
+    "question": "What is the ingress protection rating of the outdoor model?",
+    "answer": "IP56 for the outdoor model X3-O.",
     "evidence": [
       [
-        "2048"
+        "IP56"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "Why are dot products scaled by 1/sqrt(d_k) in attention?",
-    "answer": "For large d_k the dot products grow large and push the softmax into regions with extremely small gradients; scaling counteracts this.",
+    "question": "How high above the ground should the controller be mounted?",
+    "answer": "With its base at least 1.2 metres above ground level.",
     "evidence": [
       [
-        "extremely small gradients"
+        "at least 1.2 metres"
+      ],
+      [
+        "at least 1.2 m above"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What functions are used for the positional encodings?",
-    "answer": "Sine and cosine functions of different frequencies.",
+    "question": "What is the maximum cable run when using 18 AWG cable?",
+    "answer": "Up to 240 metres.",
     "evidence": [
       [
-        "sine and cosine"
+        "18 AWG",
+        "240"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "Why did the authors choose sinusoidal positional encodings over learned ones?",
-    "answer": "They may let the model extrapolate to sequence lengths longer than those seen in training; learned embeddings gave nearly identical results.",
+    "question": "What cable should be used for runs longer than 240 metres, and how far can it go?",
+    "answer": "16 AWG cable, for runs of up to 380 metres.",
     "evidence": [
       [
-        "extrapolate"
+        "16 AWG",
+        "380"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How large is the WMT 2014 English-German training set?",
-    "answer": "About 4.5 million sentence pairs.",
+    "question": "How do you factory-reset the controller?",
+    "answer": "Hold the SET and MANUAL buttons together for 15 seconds; this erases programs and Wi-Fi credentials.",
     "evidence": [
       [
-        "4.5 million"
+        "15 seconds",
+        "MANUAL"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What vocabulary was used for English-German translation?",
-    "answer": "Byte-pair encoding with a shared source-target vocabulary of about 37,000 tokens.",
+    "question": "How many programs can the X3 store, and how many start times can each have?",
+    "answer": "Up to 12 programs, each with up to 8 start times per day.",
     "evidence": [
       [
-        "37000"
+        "12 programs",
+        "8 start times"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How large is the WMT 2014 English-French dataset?",
-    "answer": "36 million sentences, with a 32,000 word-piece vocabulary.",
+    "question": "What is the default rain-probability threshold for Smart Skip?",
+    "answer": "60%: watering is skipped if the forecast rain probability in the next 24 hours is 60% or higher.",
     "evidence": [
       [
-        "36M"
+        "60% or higher"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What hardware were the models trained on?",
-    "answer": "One machine with 8 NVIDIA P100 GPUs.",
+    "question": "Within what range can the Smart Skip threshold be adjusted?",
+    "answer": "Between 40% and 90%.",
     "evidence": [
       [
-        "P100"
+        "between 40% and 90%"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How long did the base model train?",
-    "answer": "100,000 steps, about 12 hours.",
+    "question": "At what temperature does Freeze Skip prevent watering?",
+    "answer": "When the forecast temperature at the start time is below 3 C.",
     "evidence": [
       [
-        "12 hours"
+        "below 3 C"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How long did the big model train?",
-    "answer": "300,000 steps, about 3.5 days.",
+    "question": "What is the default soak period in Cycle & Soak?",
+    "answer": "20 minutes.",
     "evidence": [
       [
-        "3.5 days"
+        "soak period is 20 minutes"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "Which optimizer was used for training?",
-    "answer": "Adam, with beta1 = 0.9, beta2 = 0.98 and epsilon = 1e-9.",
+    "question": "What did the Pune pilot study find?",
+    "answer": "Across 312 homes, average outdoor water use fell by 31%.",
     "evidence": [
       [
-        "Adam optimizer"
+        "312 homes",
+        "31%"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How many warmup steps were used in the learning-rate schedule?",
-    "answer": "4000 warmup steps.",
+    "question": "What does error code E12 mean?",
+    "answer": "A flow anomaly: flow more than 25% above the learned baseline.",
     "evidence": [
       [
-        "4000"
+        "E12",
+        "25%"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What residual dropout rate was used for the base model?",
-    "answer": "P_drop = 0.1.",
+    "question": "What happens when an E07 short circuit is detected?",
+    "answer": "The affected zone is disabled, the rest of the program continues, and the zone is re-enabled after the next successful Zone Test.",
     "evidence": [
       [
-        "residual dropout"
+        "E07 short circuit is detected"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What value of label smoothing was used?",
-    "answer": "0.1.",
+    "question": "At what time are firmware updates installed?",
+    "answer": "At 02:00 local time (waiting if a program is running).",
     "evidence": [
       [
-        "label smoothing"
+        "02:00"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What BLEU score did the big Transformer get on WMT 2014 English-to-German?",
-    "answer": "28.4 BLEU.",
+    "question": "What is the rate limit of the v2 developer API?",
+    "answer": "60 requests per minute per controller.",
     "evidence": [
       [
-        "28.4"
+        "60 requests per minute"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What BLEU score did the big Transformer get on WMT 2014 English-to-French?",
-    "answer": "41.8 BLEU.",
+    "question": "How long do OAuth access tokens last in the API?",
+    "answer": "3600 seconds (refresh tokens are valid for 30 days).",
     "evidence": [
       [
-        "41.8"
+        "3600 seconds"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What beam search settings were used during inference?",
-    "answer": "Beam size 4 with length penalty alpha = 0.6.",
+    "question": "How much does AquaPilot Pro cost?",
+    "answer": "Rs 149 per month or Rs 1,499 per year.",
     "evidence": [
       [
-        "beam size"
+        "Rs 149"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How were checkpoints combined for the final models?",
-    "answer": "The base models averaged the last 5 checkpoints (written at 10-minute intervals); the big models averaged the last 20.",
+    "question": "How long is the warranty for customers with an active Pro subscription?",
+    "answer": "5 years in total.",
     "evidence": [
       [
-        "checkpoints",
-        "averag"
+        "5 years in total"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "Besides translation, what task was used to test whether the Transformer generalizes?",
-    "answer": "English constituency parsing.",
+    "question": "How quickly are warranty replacements dispatched?",
+    "answer": "Within 15 business days of receiving the faulty unit.",
     "evidence": [
       [
-        "constituency parsing"
+        "15 business days"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What dataset was used for the constituency parsing experiments?",
-    "answer": "The Wall Street Journal portion of the Penn Treebank, about 40K training sentences.",
+    "question": "In which firmware version was Matter support added, and what can be controlled over Matter?",
+    "answer": "Firmware 3.5.0; only manual zone start and stop are exposed over Matter.",
     "evidence": [
       [
-        "40K"
+        "3.5.0",
+        "Matter"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What F1 score did the Transformer reach on parsing when trained only on WSJ?",
-    "answer": "91.3 F1.",
+    "question": "How many additional users can the owner invite?",
+    "answer": "Up to 10 additional users (Viewer, Operator or Admin roles).",
     "evidence": [
       [
-        "91.3"
+        "up to 10 additional users"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "In what three ways does the Transformer use multi-head attention?",
-    "answer": "Encoder-decoder attention, self-attention in the encoder, and masked self-attention in the decoder.",
+    "question": "How long is the flow sensor's learning period before leak detection starts?",
+    "answer": "14 days.",
     "evidence": [
       [
-        "encoder-decoder attention"
+        "14 days"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How does the decoder prevent positions from attending to subsequent positions?",
-    "answer": "By masking (setting to -infinity) illegal connections in the softmax, combined with offsetting output embeddings by one position.",
+    "question": "What summer run time is recommended for Indore?",
+    "answer": "21 minutes per zone, every 2 days.",
     "evidence": [
       [
-        "masking"
+        "Indore",
+        "21"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "What three criteria did the authors use to compare self-attention with recurrent and convolutional layers?",
-    "answer": "Computational complexity per layer, how much computation can be parallelized, and the path length between long-range dependencies.",
+    "question": "What crop coefficient is used for fruit trees?",
+    "answer": "0.65.",
     "evidence": [
       [
-        "path length"
+        "Fruit trees",
+        "0.65"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "Where is dropout applied in the Transformer besides sub-layer outputs?",
-    "answer": "To the sums of the embeddings and the positional encodings in both encoder and decoder stacks.",
+    "question": "What is the maximum cycle length for spray zones on clay soil?",
+    "answer": "8 minutes per cycle.",
     "evidence": [
       [
-        "sums of the embeddings"
+        "maximum of 8 minutes"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How are the embedding weights shared in the model?",
-    "answer": "The same weight matrix is shared between the two embedding layers and the pre-softmax linear transformation; embeddings are multiplied by sqrt(d_model).",
+    "question": "What warranty did the legacy AquaPilot X2 have?",
+    "answer": "2 years.",
     "evidence": [
       [
-        "pre-softmax linear transformation"
+        "X2 (legacy)",
+        "2 years"
       ]
     ],
     "answerable": true
   },
   {
-    "question": "How many parameters does GPT-3 have?",
+    "question": "How much does the AquaPilot X3 controller itself cost to buy?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "What BLEU score did the Transformer achieve on WMT 2016 Romanian-English?",
+    "question": "Does the X3 support Zigbee?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "Which cloud provider was used to train the models?",
+    "question": "Who is the CEO of Verdant Labs?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "What was the total cost in US dollars of training the big model?",
+    "question": "What is the maximum flow rate in litres per minute that the flow sensor can measure?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "How well does the Transformer perform on ImageNet image classification?",
+    "question": "Which iOS and Android versions does the AquaPilot app support?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "What accuracy does the model achieve on the GLUE benchmark?",
+    "question": "Which cloud provider hosts the AquaPilot API?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "What learning rate was used for fine-tuning on SQuAD?",
+    "question": "How many AquaPilot X3 units have been sold?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "Which universities did the authors receive their PhDs from?",
+    "question": "What is the warranty period for customers in Europe?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "How many GPUs were used to train GPT-2?",
+    "question": "What colours is the X3 available in?",
     "answer": "",
     "evidence": [],
     "answerable": false
   },
   {
-    "question": "What is the masked language modelling objective used in BERT pre-training?",
+    "question": "Does the X3 support Amazon Alexa voice commands?",
     "answer": "",
     "evidence": [],
     "answerable": false

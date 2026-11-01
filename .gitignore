@@ -40,3 +40,4 @@ dummy_knowledge.pdf
 # Eval cache (re-created on each run)
 eval/cache.json
 eval/*.pdf
+!eval/aquapilot_x3_manual.pdf

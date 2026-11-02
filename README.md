@@ -32,14 +32,16 @@
 ## 🧭 How it works
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Ingest["📥 Ingest (once per PDF)"]
+        direction LR
         A[PDF upload] --> B[Extract text<br/>PyPDF2]
         B --> C[Chunk<br/>100 words, 10 overlap]
         C --> D[Embed<br/>all-MiniLM-L6-v2, 384-d]
         D --> E[(Supabase<br/>pgvector)]
     end
     subgraph Ask["💬 Ask (every question)"]
+        direction LR
         Q[Question] --> QE[Embed question]
         QE --> S{Cosine search<br/>top 5, similarity > 0.3}
         E -.-> S

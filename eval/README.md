@@ -56,4 +56,14 @@ similarity below the 0.3 relevance threshold, so relevant chunks are filtered ou
 Switching to 100-word chunks raised recall@5 from 57% to 93% and MRR from 0.51 to 0.77, and the app now
 uses 100-word chunks by default (`CHUNK_SIZE` / `CHUNK_OVERLAP` in `config.py`).
 
-_Generation-stage results (correctness, faithfulness, refusal accuracy) will be added after the Groq run._
+Generation stage (answers from `openai/gpt-oss-120b`, judged by `openai/gpt-oss-20b`) for the previous
+default and the best retrieval config:
+
+| Chunk (words) | Recall@5 | Correctness | Faithfulness | Refusal accuracy |
+|---|---|---|---|---|
+| **100** | **93%** | **90%** | **100%** | **100%** |
+| 500 (previous default) | 57% | 53% | 100% | 90% |
+
+Better retrieval translated directly into better answers: correctness rose from 53% to 90%. Faithfulness
+stayed at 100% for both (the model never added claims the retrieved text did not support), and with
+100-word chunks DocuMind declined all 10 unanswerable questions instead of guessing.

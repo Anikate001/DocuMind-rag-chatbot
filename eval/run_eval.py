@@ -123,6 +123,8 @@ def call_with_retry(fn, tries=6):
             return fn()
         except Exception as e:  # rate limit or transient error
             msg = str(e)
+            if "401" in msg or "Invalid API Key" in msg:
+                sys.exit("\nGroq rejected the API key (401). Check GROQ_API_KEY - Groq keys start with 'gsk_'.\n")
             if "tokens per day" in msg or "TPD" in msg:
                 sys.exit("\nGroq daily token limit reached. Progress is cached; run the same command again tomorrow.\n")
             wait = 10 * (attempt + 1)

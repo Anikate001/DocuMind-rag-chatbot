@@ -17,7 +17,9 @@
   <img src="https://img.shields.io/badge/Refusal%20accuracy-100%25-2a78d6?style=flat-square" alt="Refusal accuracy 100%">
 </p>
 
-[How it works](#-how-it-works) · [Results](#-results) · [Quick start](#-quick-start) · [Evaluation harness](eval/README.md)
+<a href="https://documind-anikate.streamlit.app"><img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg" alt="Open the live demo on Streamlit"></a>
+
+**[▶ Live demo](https://documind-anikate.streamlit.app)** · [How it works](#-how-it-works) · [Results](#-results) · [Quick start](#-quick-start) · [Evaluation harness](eval/README.md)
 
 </div>
 
@@ -27,6 +29,7 @@
 
 - **Grounded answers with citations.** Every answer cites the chunks it came from as `[1]`, `[2]`, and DocuMind says so when the documents don't contain the answer.
 - **Measured, not guessed.** A built-in evaluation harness scores retrieval and answers against a 40-question golden set. It found that the original 500-word chunks were dropping relevant passages, and retuning to 100-word chunks raised answer correctness from **53% to 90%**.
+- **Live.** Try it at [documind-anikate.streamlit.app](https://documind-anikate.streamlit.app): upload a PDF and ask away. The app sleeps when idle and wakes in about 30 seconds.
 - **Free to run.** Local embeddings, Supabase's free Postgres + pgvector, and Groq's free inference tier.
 
 ## 🧭 How it works

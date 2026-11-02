@@ -3,7 +3,7 @@
 > **A production-grade Retrieval-Augmented Generation (RAG) chatbot.**  
 > Upload PDF documents, ask questions in natural language, and get cited answers — eliminating hallucination by design.
 
-![DocuMind Screenshot](https://img.shields.io/badge/Status-Live-2ECC71?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?style=flat-square&logo=streamlit&logoColor=white) ![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?style=flat-square&logo=supabase&logoColor=white) ![Groq](https://img.shields.io/badge/Groq-Llama3--70B-FF6B2B?style=flat-square)
+![DocuMind Screenshot](https://img.shields.io/badge/Status-Live-2ECC71?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?style=flat-square&logo=streamlit&logoColor=white) ![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?style=flat-square&logo=supabase&logoColor=white) ![Groq](https://img.shields.io/badge/Groq-gpt--oss--120b-FF6B2B?style=flat-square)
 
 ---
 
@@ -66,7 +66,7 @@ DocuMind lets you **upload PDF documents** and **ask questions** about their con
 | **Embeddings** | `all-MiniLM-L6-v2` (HuggingFace) | Free, local, 384-dim vectors — no API cost, runs on CPU |
 | **Vector Database** | Supabase pgvector | Free PostgreSQL with vector similarity search built-in |
 | **Similarity Search** | Cosine similarity via `match_chunks` RPC | Finds the most semantically relevant chunks for any query |
-| **LLM** | Groq `llama-3.3-70b-versatile` | Free tier (14,400 req/day), fastest inference available |
+| **LLM** | Groq `openai/gpt-oss-120b` (configurable via `GROQ_MODEL`) | Free tier, fast inference; Llama 3.x was retired by Groq in Aug 2026 |
 | **Prompt Engineering** | System prompt with citation rules | Forces the model to cite sources [1],[2] and never hallucinate |
 | **Frontend** | Streamlit with custom CSS injection | Premium dark UI with typing animations, no JavaScript needed |
 
@@ -85,7 +85,7 @@ DocuMind lets you **upload PDF documents** and **ask questions** about their con
 | Service | Purpose | Cost |
 |---------|---------|------|
 | **Supabase** | PostgreSQL + pgvector + Storage | Free tier |
-| **Groq** | LLM inference (Llama3-70B) | Free (14,400 req/day) |
+| **Groq** | LLM inference (gpt-oss-120b) | Free tier |
 | **HuggingFace** | Sentence-transformer embeddings | Free (runs locally) |
 | **Streamlit** | Frontend + hosting | Free |
 
@@ -100,7 +100,7 @@ rag-chatbot/
 ├── database.py         # Supabase client (single shared instance)
 ├── ingest.py           # PDF → text → chunks → embeddings → pgvector
 ├── retriever.py        # Query embedding + cosine similarity search
-├── llm.py              # Groq Llama3 answer generation with citations
+├── llm.py              # Groq answer generation with citations
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Template for environment variables
 ├── .streamlit/
@@ -236,7 +236,7 @@ streamlit run app.py
 | `SUPABASE_URL` | ✅ | Your Supabase project URL |
 | `SUPABASE_KEY` | ✅ | Service role key (from Settings → API) |
 | `GROQ_API_KEY` | ✅ | From [console.groq.com](https://console.groq.com) |
-| `GROQ_MODEL` | ❌ | Default: `llama-3.3-70b-versatile` |
+| `GROQ_MODEL` | ❌ | Default: `openai/gpt-oss-120b` |
 | `EMBEDDING_MODEL` | ❌ | Default: `all-MiniLM-L6-v2` |
 | `RETRIEVAL_COUNT` | ❌ | Default: `5` chunks per query |
 | `SIMILARITY_THRESHOLD` | ❌ | Default: `0.3` (range 0.0–1.0) |
@@ -256,7 +256,7 @@ streamlit run app.py
 
 ### 3. Deprecated LLM Model
 **Challenge:** The original `llama3-70b-8192` model was decommissioned by Groq, causing all LLM calls to fail.  
-**Solution:** Listed available models via the Groq API and switched to `llama-3.3-70b-versatile`, which is currently active and free.
+**Solution:** Listed available models via the Groq API and switched to `llama-3.3-70b-versatile`. When Groq retired the Llama 3.x models in August 2026, the model became a `GROQ_MODEL` setting defaulting to `openai/gpt-oss-120b`, Groq's recommended replacement.
 
 ### 4. Embedding Model Download Latency
 **Challenge:** The `all-MiniLM-L6-v2` model (~90MB) downloads on first use, causing the app to appear frozen.  

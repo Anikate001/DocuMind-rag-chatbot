@@ -56,7 +56,7 @@ CONFIGS = [  # (chunk_size_words, overlap_words)
 APP_DEFAULT = (500, 50)
 TOP_K = 5
 THRESHOLD = 0.3                       # same as retriever.py
-JUDGE_MODEL = "llama-3.1-8b-instant"  # cheaper on the free tier; generation still uses the app's 70B model
+JUDGE_MODEL = os.getenv("JUDGE_MODEL", "openai/gpt-oss-20b")  # smaller judge; generation uses the app's model
 REFUSAL_TEXT = "I couldn't find relevant information in the uploaded documents."
 
 
@@ -125,6 +125,8 @@ def call_with_retry(fn, tries=6):
             msg = str(e)
             if "401" in msg or "Invalid API Key" in msg:
                 sys.exit("\nGroq rejected the API key (401). Check GROQ_API_KEY - Groq keys start with 'gsk_'.\n")
+            if "404" in msg and "model" in msg:
+                sys.exit(f"\nGroq model not found (404): {msg[:200]}\nSet GROQ_MODEL / JUDGE_MODEL to a current model.\n")
             if "tokens per day" in msg or "TPD" in msg:
                 sys.exit("\nGroq daily token limit reached. Progress is cached; run the same command again tomorrow.\n")
             wait = 10 * (attempt + 1)
@@ -147,12 +149,14 @@ def judge(prompt):
     client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
     def _call():
+        kwargs = {"reasoning_effort": "low"} if JUDGE_MODEL.startswith("openai/gpt-oss") else {}
         r = client.chat.completions.create(
-            model=JUDGE_MODEL, temperature=0,
+            model=JUDGE_MODEL, temperature=0, max_tokens=800,
             response_format={"type": "json_object"},
             messages=[{"role": "user", "content": prompt}],
+            **kwargs,
         )
-        return json.loads(r.choices[0].message.content)
+        return json.loads(r.choices[0].message.content or "{}")
     return call_with_retry(_call)
 
 

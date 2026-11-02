@@ -1,133 +1,121 @@
-# 📄 DocuMind — RAG Chatbot
+<div align="center">
 
-> **A production-grade Retrieval-Augmented Generation (RAG) chatbot.**  
-> Upload PDF documents, ask questions in natural language, and get cited answers — eliminating hallucination by design.
+# 📄 DocuMind
 
-![DocuMind Screenshot](https://img.shields.io/badge/Status-Live-2ECC71?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?style=flat-square&logo=streamlit&logoColor=white) ![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?style=flat-square&logo=supabase&logoColor=white) ![Groq](https://img.shields.io/badge/Groq-gpt--oss--120b-FF6B2B?style=flat-square)
+### Ask questions about your PDFs and get cited answers, grounded only in your documents.
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/Supabase-pgvector-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase pgvector">
+  <img src="https://img.shields.io/badge/Groq-gpt--oss--120b-F55036?style=for-the-badge" alt="Groq">
+</p>
+<p>
+  <img src="https://img.shields.io/badge/Recall@5-93%25-2a78d6?style=flat-square" alt="Recall@5 93%">
+  <img src="https://img.shields.io/badge/Answer%20correctness-90%25-2a78d6?style=flat-square" alt="Answer correctness 90%">
+  <img src="https://img.shields.io/badge/Faithfulness-100%25-2a78d6?style=flat-square" alt="Faithfulness 100%">
+  <img src="https://img.shields.io/badge/Refusal%20accuracy-100%25-2a78d6?style=flat-square" alt="Refusal accuracy 100%">
+</p>
+
+[How it works](#-how-it-works) · [Results](#-results) · [Quick start](#-quick-start) · [Evaluation harness](eval/README.md)
+
+</div>
 
 ---
 
-## 🎯 What It Does
+## ✨ Highlights
 
-DocuMind lets you **upload PDF documents** and **ask questions** about their content. Every answer includes **citations** pointing to the exact source chunk — so you always know where the information came from.
+- **Grounded answers with citations.** Every answer cites the chunks it came from as `[1]`, `[2]`, and DocuMind says so when the documents don't contain the answer.
+- **Measured, not guessed.** A built-in evaluation harness scores retrieval and answers against a 40-question golden set. It found that the original 500-word chunks were dropping relevant passages, and retuning to 100-word chunks raised answer correctness from **53% to 90%**.
+- **Free to run.** Local embeddings, Supabase's free Postgres + pgvector, and Groq's free inference tier.
 
-**Example workflow:**
-1. Upload a 50-page research paper
-2. Ask: *"What are the key findings of this study?"*
-3. Get a precise, cited answer referencing specific sections of the paper
+## 🧭 How it works
 
----
-
-## 🏗️ Architecture & Methods
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    DocuMind RAG Pipeline                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  📄 PDF Upload                                              │
-│    │                                                        │
-│    ▼                                                        │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
-│  │  Extract Text │──▶│ Chunk Text   │──▶│  Embed with  │    │
-│  │  (PyPDF2)     │   │ (100 words,  │   │  MiniLM-L6   │    │
-│  │               │   │  10 overlap) │   │  (384-dim)   │    │
-│  └──────────────┘   └──────────────┘   └──────┬───────┘    │
-│                                                │            │
-│                                         ┌──────▼───────┐    │
-│                                         │  Store in    │    │
-│                                         │  Supabase    │    │
-│                                         │  pgvector    │    │
-│                                         └──────────────┘    │
-│                                                             │
-│  ❓ User Query                                              │
-│    │                                                        │
-│    ▼                                                        │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
-│  │ Embed Query   │──▶│ Cosine       │──▶│ Send Top-5   │    │
-│  │ (same model)  │   │ Similarity   │   │ Chunks + Q   │    │
-│  │               │   │ Search       │   │ to Groq LLM  │    │
-│  └──────────────┘   └──────────────┘   └──────┬───────┘    │
-│                                                │            │
-│                                     ┌──────────▼─────────┐  │
-│                                     │  Cited Answer      │  │
-│                                     │  with [1],[2],[3]  │  │
-│                                     │  source references │  │
-│                                     └────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Ingest["📥 Ingest (once per PDF)"]
+        A[PDF upload] --> B[Extract text<br/>PyPDF2]
+        B --> C[Chunk<br/>100 words, 10 overlap]
+        C --> D[Embed<br/>all-MiniLM-L6-v2, 384-d]
+        D --> E[(Supabase<br/>pgvector)]
+    end
+    subgraph Ask["💬 Ask (every question)"]
+        Q[Question] --> QE[Embed question]
+        QE --> S{Cosine search<br/>top 5, similarity > 0.3}
+        E -.-> S
+        S -- relevant chunks --> L[Groq LLM<br/>gpt-oss-120b]
+        S -- nothing relevant --> R[Decline:<br/>not in documents]
+        L --> ANS[Cited answer]
+    end
 ```
 
-### Methods Used
+| Component | Choice | Why |
+|---|---|---|
+| Text extraction | PyPDF2 | No external API needed |
+| Chunking | Sliding window, 100 words with 10-word overlap | Chosen with the eval harness (see Results) |
+| Embeddings | `all-MiniLM-L6-v2` | Free, local, 384-dim, runs on CPU |
+| Vector store | Supabase pgvector, `match_chunks` SQL function | Similarity search inside Postgres |
+| LLM | Groq `openai/gpt-oss-120b` (set via `GROQ_MODEL`) | Fast free tier; replaced Llama 3.3 after Groq retired it in Aug 2026 |
+| Prompting | Citation rules, temperature 0.1 | Cites sources and refuses to invent facts |
+| UI | Streamlit with custom CSS | Dark theme, live ingestion progress, typing animation |
 
-| Component | Method / Technology | Why This Choice |
-|-----------|-------------------|-----------------|
-| **Text Extraction** | PyPDF2 | Extracts text from PDF pages without external APIs |
-| **Chunking** | Sliding window (100 words, 10 overlap) | Overlap ensures answers spanning chunk boundaries are still retrievable |
-| **Embeddings** | `all-MiniLM-L6-v2` (HuggingFace) | Free, local, 384-dim vectors — no API cost, runs on CPU |
-| **Vector Database** | Supabase pgvector | Free PostgreSQL with vector similarity search built-in |
-| **Similarity Search** | Cosine similarity via `match_chunks` RPC | Finds the most semantically relevant chunks for any query |
-| **LLM** | Groq `openai/gpt-oss-120b` (configurable via `GROQ_MODEL`) | Free tier, fast inference; Llama 3.x was retired by Groq in Aug 2026 |
-| **Prompt Engineering** | System prompt with citation rules | Forces the model to cite sources [1],[2] and never hallucinate |
-| **Frontend** | Streamlit with custom CSS injection | Premium dark UI with typing animations, no JavaScript needed |
+## 📊 Results
 
-### Key Design Decisions
+The [evaluation harness](eval/README.md) runs the app's real chunking, embeddings, threshold and prompt against a
+**purpose-built fictional 11-page product manual**, so a correct answer can only come from retrieval, never from the
+model's memory. The golden set has 30 answerable questions and 10 the manual cannot answer.
 
-- **Temperature = 0.1** → Low temperature produces factual, deterministic answers and reduces hallucination
-- **Top-5 retrieval** → Balances context richness with token limits
-- **Similarity threshold = 0.3** → Filters out irrelevant chunks without being too aggressive
-- **Same embedding model** for both ingestion and retrieval → Critical for consistent vector space matching
-- **Overlapping chunks** → Prevents information loss at chunk boundaries
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/documind_results_dark.svg">
+  <img alt="Bar chart: 100-word chunks versus 500-word chunks. Recall@5 93% vs 57%, answer correctness 90% vs 53%, refusal accuracy 100% vs 90%, faithfulness 100% vs 100%." src="docs/documind_results_light.svg" width="100%">
+</picture>
 
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/documind_chunks_dark.svg">
+  <img alt="Bar chart of Recall@5 by chunk size: 100 words 93%, 200 words 70%, 300 words 70%, 500 words 57%." src="docs/documind_chunks_light.svg" width="100%">
+</picture>
 
-## 🛠️ Tech Stack (100% Free)
+| Chunk size | Recall@1 | Recall@3 | Recall@5 | MRR | Correctness | Faithfulness | Refusal accuracy |
+|---|---|---|---|---|---|---|---|
+| **100 words** | **67%** | **87%** | **93%** | **0.77** | **90%** | **100%** | **100%** |
+| 200 words | 57% | 70% | 70% | 0.62 | - | - | - |
+| 300 words | 53% | 60% | 70% | 0.58 | - | - | - |
+| 500 words (before) | 47% | 57% | 57% | 0.51 | 53% | 100% | 90% |
 
-| Service | Purpose | Cost |
-|---------|---------|------|
-| **Supabase** | PostgreSQL + pgvector + Storage | Free tier |
-| **Groq** | LLM inference (gpt-oss-120b) | Free tier |
-| **HuggingFace** | Sentence-transformer embeddings | Free (runs locally) |
-| **Streamlit** | Frontend + hosting | Free |
+> **Why 500-word chunks failed:** long chunks dilute the cosine similarity below the 0.3 relevance threshold, so
+> relevant passages were filtered out before the top 5. Recall@5 equalled Recall@3, a sign that fewer than five
+> chunks were passing the threshold at all.
 
----
+## 🚀 Quick start
 
-## 📁 Project Structure
+**Prerequisites:** Python 3.11+, a free [Supabase](https://supabase.com) project, and a free [Groq](https://console.groq.com) API key.
 
-```
-rag-chatbot/
-├── app.py              # Streamlit UI — premium dark theme with animations
-├── config.py           # Environment variable loader
-├── database.py         # Supabase client (single shared instance)
-├── ingest.py           # PDF → text → chunks → embeddings → pgvector
-├── retriever.py        # Query embedding + cosine similarity search
-├── llm.py              # Groq answer generation with citations
-├── requirements.txt    # Python dependencies
-├── .env.example        # Template for environment variables
-├── .streamlit/
-│   └── config.toml     # Streamlit dark theme configuration
-└── README.md           # This file
+```bash
+git clone https://github.com/Anikate001/DocuMind-rag-chatbot.git
+cd DocuMind-rag-chatbot
+pip install -r requirements.txt
+cp .env.example .env        # add SUPABASE_URL, SUPABASE_KEY, GROQ_API_KEY
+streamlit run app.py        # http://localhost:8501
 ```
 
----
+Then upload a PDF in the sidebar, wait for the ingestion steps to finish, and ask a question.
 
-## 🗄️ How Supabase Is Used
+<details>
+<summary><b>🗄️ Supabase setup (tables and search function)</b></summary>
 
-Supabase serves as the **complete backend** for this project — database, vector search, and file storage.
+1. Create a project at [supabase.com](https://supabase.com).
+2. In the SQL editor, enable pgvector and create the tables and search function:
 
-### Database Tables
-
-**`documents` table** — stores metadata for each uploaded PDF:
 ```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE documents (
     id          BIGSERIAL PRIMARY KEY,
     filename    TEXT NOT NULL,
     file_url    TEXT,
     uploaded_at TIMESTAMP DEFAULT NOW()
 );
-```
 
-**`chunks` table** — stores text chunks with their vector embeddings:
-```sql
 CREATE TABLE chunks (
     id          BIGSERIAL PRIMARY KEY,
     document_id BIGINT REFERENCES documents(id) ON DELETE CASCADE,
@@ -137,34 +125,18 @@ CREATE TABLE chunks (
     embedding   VECTOR(384),
     created_at  TIMESTAMP DEFAULT NOW()
 );
-```
 
-### Vector Search Function
-
-The `match_chunks` RPC function performs cosine similarity search directly in PostgreSQL:
-```sql
 CREATE OR REPLACE FUNCTION match_chunks(
     query_embedding VECTOR(384),
     match_count INT DEFAULT 5,
     match_threshold FLOAT DEFAULT 0.3
 )
-RETURNS TABLE (
-    id BIGINT,
-    content TEXT,
-    filename TEXT,
-    chunk_index INT,
-    similarity FLOAT
-)
-LANGUAGE plpgsql
-AS $$
+RETURNS TABLE (id BIGINT, content TEXT, filename TEXT, chunk_index INT, similarity FLOAT)
+LANGUAGE plpgsql AS $$
 BEGIN
     RETURN QUERY
-    SELECT
-        chunks.id,
-        chunks.content,
-        chunks.filename,
-        chunks.chunk_index,
-        1 - (chunks.embedding <=> query_embedding) AS similarity
+    SELECT chunks.id, chunks.content, chunks.filename, chunks.chunk_index,
+           1 - (chunks.embedding <=> query_embedding) AS similarity
     FROM chunks
     WHERE 1 - (chunks.embedding <=> query_embedding) > match_threshold
     ORDER BY chunks.embedding <=> query_embedding
@@ -173,163 +145,78 @@ END;
 $$;
 ```
 
-### Supabase Storage
+3. Copy the **Project URL** and **service_role key** from *Settings → API* into `.env`. Keep the service-role key
+   out of version control: it bypasses Row Level Security.
 
-Raw PDF files are uploaded to a public **Storage bucket** (`documents`) so users can reference the original files. The bucket is auto-created on first upload via the REST API.
+Raw PDFs are also uploaded to a public Storage bucket named `documents`, created automatically on first upload.
 
-### Setup Steps in Supabase
+</details>
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Enable the **pgvector extension**: SQL Editor → `CREATE EXTENSION IF NOT EXISTS vector;`
-3. Create the `documents` and `chunks` tables (SQL above)
-4. Create the `match_chunks` function (SQL above)
-5. Copy your **Project URL** and **service_role key** from Settings → API
+<details>
+<summary><b>☁️ Deploy on Streamlit Community Cloud</b></summary>
 
----
+1. Push the repo to GitHub and open [share.streamlit.io](https://share.streamlit.io) → **Create app**.
+2. Pick this repo, branch `main` and main file `app.py`.
+3. Under **Advanced settings → Secrets**, paste the keys using the format in
+   [`.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example). Root-level secrets become environment
+   variables, so no code changes are needed.
+4. `requirements.txt` installs CPU-only PyTorch to keep the build small.
 
-## 🚀 How to Run
+</details>
 
-### Prerequisites
-- Python 3.11+
-- Supabase account with pgvector enabled
-- Groq API key (free at [console.groq.com](https://console.groq.com))
+<details>
+<summary><b>🔧 Configuration</b></summary>
 
-### 1. Clone the Repository
+| Variable | Required | Default |
+|---|---|---|
+| `SUPABASE_URL` | ✅ | |
+| `SUPABASE_KEY` | ✅ | |
+| `GROQ_API_KEY` | ✅ | |
+| `GROQ_MODEL` | | `openai/gpt-oss-120b` |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | | `100` / `10` words |
+| `SIMILARITY_THRESHOLD` | | `0.3` |
+| `MAX_RESPONSE_TOKENS` | | `1024` |
+
+</details>
+
+## 🧪 Run the evaluation
+
 ```bash
-git clone https://github.com/Anikate001/rag-chatbot.git
-cd rag-chatbot
+python eval/run_eval.py --retrieval-only   # free: recall@k and MRR for 4 chunk sizes
+python eval/run_eval.py                    # adds LLM-judged correctness, faithfulness, refusals (needs GROQ_API_KEY)
 ```
 
-### 2. Set Up Environment Variables
-```bash
-cp .env.example .env
-# Edit .env and fill in your keys
+Or open [`eval/DocuMind_eval_colab.ipynb`](eval/DocuMind_eval_colab.ipynb) in Google Colab. Details in [`eval/README.md`](eval/README.md).
+
+## 📁 Project structure
+
+```
+DocuMind-rag-chatbot/
+├── app.py            # Streamlit UI
+├── ingest.py         # PDF → chunks → embeddings → pgvector
+├── retriever.py      # Question embedding + match_chunks search
+├── llm.py            # Groq answer generation with citations
+├── text_utils.py     # Credential-free extraction, chunking, context formatting
+├── config.py         # Settings from environment variables
+├── database.py       # Shared Supabase client
+├── eval/             # Golden set, test manual, harness, Colab notebook
+└── docs/             # Result charts used in this README
 ```
 
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+<details>
+<summary><b>⚡ Engineering notes</b></summary>
 
-### 4. Set Up Supabase
-- Enable pgvector: `CREATE EXTENSION IF NOT EXISTS vector;`
-- Run the SQL statements from the [Supabase section](#-how-supabase-is-used) to create tables and the `match_chunks` function
+- **Row Level Security:** the anon key was blocked by RLS on inserts and Storage, so the app uses the service-role
+  key; production use should add RLS policies instead.
+- **Storage bucket:** the SDK's `create_bucket()` failed with signature mismatches, so the bucket is created through
+  the REST API.
+- **Model retirement:** Groq retired `llama3-70b-8192`, then `llama-3.3-70b-versatile` (16 Aug 2026). The model is
+  now a single setting, defaulting to Groq's recommended `openai/gpt-oss-120b`.
+- **Cold start:** the 90 MB embedding model loads once at import and is cached after the first download.
+- **Chunk size:** chosen by measurement rather than intuition; see Results.
 
-### 5. Run the App
-```bash
-streamlit run app.py
-# Open http://localhost:8501
-```
-
-### 6. Use It
-1. Upload a PDF via the sidebar
-2. Wait for processing (extraction → chunking → embedding → storage)
-3. Ask questions in the chat input
-4. Get cited answers with source references!
-
----
-
-## 🔧 Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SUPABASE_URL` | ✅ | Your Supabase project URL |
-| `SUPABASE_KEY` | ✅ | Service role key (from Settings → API) |
-| `GROQ_API_KEY` | ✅ | From [console.groq.com](https://console.groq.com) |
-| `GROQ_MODEL` | ❌ | Default: `openai/gpt-oss-120b` |
-| `EMBEDDING_MODEL` | ❌ | Default: `all-MiniLM-L6-v2` |
-| `RETRIEVAL_COUNT` | ❌ | Default: `5` chunks per query |
-| `SIMILARITY_THRESHOLD` | ❌ | Default: `0.3` (range 0.0–1.0) |
-| `MAX_RESPONSE_TOKENS` | ❌ | Default: `1024` |
-
----
-
-## ⚡ Challenges Faced & Solutions
-
-### 1. API Key Permissions (RLS)
-**Challenge:** The Supabase `publishable` (anon) key was blocked by **Row Level Security (RLS)** — all database INSERTs and Storage operations returned `401 Unauthorized`.  
-**Solution:** Switched to the `service_role` key which bypasses RLS entirely. For production, proper RLS policies should be configured instead.
-
-### 2. Storage Bucket Creation
-**Challenge:** The Python Supabase SDK's `create_bucket()` method had parameter signature mismatches that caused `400 Bad Request` errors.  
-**Solution:** Replaced the SDK call with a direct **REST API request** (`POST /storage/v1/bucket`) which works reliably. The bucket is auto-created if it doesn't exist.
-
-### 3. Deprecated LLM Model
-**Challenge:** The original `llama3-70b-8192` model was decommissioned by Groq, causing all LLM calls to fail.  
-**Solution:** Listed available models via the Groq API and switched to `llama-3.3-70b-versatile`. When Groq retired the Llama 3.x models in August 2026, the model became a `GROQ_MODEL` setting defaulting to `openai/gpt-oss-120b`, Groq's recommended replacement.
-
-### 4. Embedding Model Download Latency
-**Challenge:** The `all-MiniLM-L6-v2` model (~90MB) downloads on first use, causing the app to appear frozen.  
-**Solution:** The model is loaded once at module import time and cached. After the initial download, subsequent runs start instantly.
-
-### 5. Chunk Boundary Information Loss
-**Challenge:** Naive text splitting can cut sentences mid-thought, making chunks lose context.  
-**Solution:** Implemented **overlapping chunks** (100 words with 10-word overlap, chosen with the eval harness), ensuring that information spanning chunk boundaries is captured in at least one chunk.
-
-### 6. Streamlit UI Limitations
-**Challenge:** Streamlit doesn't support custom JavaScript, making it hard to create premium interactive UIs.  
-**Solution:** Used **CSS injection via `st.markdown(unsafe_allow_html=True)`** to override all default Streamlit styles, add animations (`@keyframes`), custom scrollbars, and a complete dark theme — all without JavaScript.
-
----
-
-## 🎨 UI Features
-
-- **Dark theme** with `#0A0A0A` background and `#FF6B2B` warm orange accent
-- **Animated header** with glowing accent line and pulsing logo
-- **Real-time stats bar** — Documents, Chunks, Questions Asked, Model
-- **Processing cards** — step-by-step progress during PDF ingestion
-- **Typing animation** — assistant responses stream character-by-character
-- **Chunk cards** — color-coded similarity scores (green/yellow/grey)
-- **Suggestion chips** — quick-start prompts for new users
-
----
+</details>
 
 ## 📜 License
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-## 🙏 Acknowledgments
-
-- [Supabase](https://supabase.com) — for the free PostgreSQL + pgvector platform
-- [Groq](https://groq.com) — for the fastest free LLM inference
-- [HuggingFace](https://huggingface.co) — for the `all-MiniLM-L6-v2` embedding model
-- [Streamlit](https://streamlit.io) — for the Python web framework
-
----
-
-*Built by [Anikate001](https://github.com/Anikate001)*
-
----
-
-## 📏 Evaluation
-
-DocuMind ships with an evaluation harness (`eval/`) that scores retrieval (Recall@5, MRR) and answers
-(correctness, faithfulness, refusal accuracy on unanswerable questions) against a 40-question golden set,
-and compares chunking strategies. See [`eval/README.md`](eval/README.md) to run it.
-
-| Chunk (words) | Overlap | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR |
-|---|---|---|---|---|---|---|
-| **100** | 10 | 36 | **67%** | **87%** | **93%** | **0.77** |
-| 200 | 20 | 18 | 57% | 70% | 70% | 0.62 |
-| 300 | 30 | 12 | 53% | 60% | 70% | 0.58 |
-| 500 (previous default) | 50 | 8 | 47% | 57% | 57% | 0.51 |
-
-**Finding:** with 500-word chunks, recall@5 equals recall@3 because long chunks dilute the cosine
-similarity below the 0.3 relevance threshold, so relevant chunks are filtered out before the top 5.
-Switching to 100-word chunks raised recall@5 from 57% to 93% and MRR from 0.51 to 0.77, and the app now
-uses 100-word chunks by default (`CHUNK_SIZE` / `CHUNK_OVERLAP` in `config.py`).
-
-Generation stage (answers from `openai/gpt-oss-120b`, judged by `openai/gpt-oss-20b`) for the previous
-default and the best retrieval config:
-
-| Chunk (words) | Recall@5 | Correctness | Faithfulness | Refusal accuracy |
-|---|---|---|---|---|
-| **100** | **93%** | **90%** | **100%** | **100%** |
-| 500 (previous default) | 57% | 53% | 100% | 90% |
-
-Better retrieval translated directly into better answers: correctness rose from 53% to 90%. Faithfulness
-stayed at 100% for both (the model never added claims the retrieved text did not support), and with
-100-word chunks DocuMind declined all 10 unanswerable questions instead of guessing.
-
+[MIT](LICENSE)

@@ -4,6 +4,8 @@ import PyPDF2
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from database import supabase
+from text_utils import extract_text_from_pdf, chunk_text
+from config import CHUNK_SIZE, CHUNK_OVERLAP
 
 # Load embedding model once (free, runs locally, 384 dims)
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
@@ -35,26 +37,6 @@ def _ensure_bucket_exists():
                 print(f"  Bucket creation response: {r2.status_code} {r2.text}")
     except Exception as e:
         print(f"  Bucket check/create note: {e}")
-
-def extract_text_from_pdf(file_bytes: bytes) -> str:
-    reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
-    text = ""
-    for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text + "\n"
-    return text
-
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
-    """Split text into overlapping chunks."""
-    words = text.split()
-    chunks = []
-    i = 0
-    while i < len(words):
-        chunk = " ".join(words[i:i + chunk_size])
-        chunks.append(chunk)
-        i += chunk_size - overlap  # overlap so context isn't lost at boundaries
-    return chunks
 
 def embed_chunks(chunks: list[str]) -> list[list[float]]:
     """Convert text chunks to embedding vectors."""
@@ -121,7 +103,7 @@ def ingest_pdf(file_bytes: bytes, filename: str, progress_callback=None) -> dict
     # Step 3 — Extract and chunk text
     text = extract_text_from_pdf(file_bytes)
     num_pages = len(PyPDF2.PdfReader(io.BytesIO(file_bytes)).pages)
-    chunks = chunk_text(text, chunk_size=500, overlap=50)
+    chunks = chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP)
     _progress(3, f"Creating chunks ({len(chunks)} chunks from {num_pages} pages)")
 
     # Step 4 — Generate embeddings

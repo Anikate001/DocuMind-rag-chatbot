@@ -498,7 +498,7 @@ st.markdown("""
             <h1 class="app-title">DocuMind</h1>
             <p class="app-subtitle">Upload documents · Ask questions · Get cited answers</p>
         </div>
-        <div class="header-badge">RAG · Llama3 · pgvector</div>
+        <div class="header-badge">RAG · gpt-oss · pgvector</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -528,7 +528,7 @@ with s2:
 with s3:
     st.markdown(f"""<div class="stat-item"><div class="stat-value">{st.session_state.questions_asked}</div><div class="stat-label">Questions Asked</div></div>""", unsafe_allow_html=True)
 with s4:
-    st.markdown("""<div class="stat-item"><div class="stat-value">Llama3</div><div class="stat-label">LLM Model</div></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="stat-item"><div class="stat-value">gpt-oss</div><div class="stat-label">LLM Model</div></div>""", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # Sidebar — PDF Upload

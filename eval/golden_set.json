@@ -1,0 +1,379 @@
+[
+  {
+    "question": "What is the maximum number of zones the AquaPilot X3 can control with expansion modules?",
+    "answer": "48 zones, using two ZX-16 expansion modules (16 built-in plus 16 per module).",
+    "evidence": [
+      [
+        "48 zones"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Does the X3 support 5 GHz Wi-Fi networks?",
+    "answer": "No. It supports 2.4 GHz Wi-Fi only (802.11 b/g/n).",
+    "evidence": [
+      [
+        "5 GHz networks are not supported"
+      ],
+      [
+        "5 GHz-only router"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the maximum output current per zone?",
+    "answer": "0.65 A per zone.",
+    "evidence": [
+      [
+        "0.65 A"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long does the X3 keep its schedule without power, and what does it use to do that?",
+    "answer": "Up to 72 hours, using a supercapacitor (it has no battery).",
+    "evidence": [
+      [
+        "supercapacitor",
+        "72 hours"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the ingress protection rating of the outdoor model?",
+    "answer": "IP56 for the outdoor model X3-O.",
+    "evidence": [
+      [
+        "IP56"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How high above the ground should the controller be mounted?",
+    "answer": "With its base at least 1.2 metres above ground level.",
+    "evidence": [
+      [
+        "at least 1.2 metres"
+      ],
+      [
+        "at least 1.2 m above"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the maximum cable run when using 18 AWG cable?",
+    "answer": "Up to 240 metres.",
+    "evidence": [
+      [
+        "18 AWG",
+        "240"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What cable should be used for runs longer than 240 metres, and how far can it go?",
+    "answer": "16 AWG cable, for runs of up to 380 metres.",
+    "evidence": [
+      [
+        "16 AWG",
+        "380"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How do you factory-reset the controller?",
+    "answer": "Hold the SET and MANUAL buttons together for 15 seconds; this erases programs and Wi-Fi credentials.",
+    "evidence": [
+      [
+        "15 seconds",
+        "MANUAL"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How many programs can the X3 store, and how many start times can each have?",
+    "answer": "Up to 12 programs, each with up to 8 start times per day.",
+    "evidence": [
+      [
+        "12 programs",
+        "8 start times"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the default rain-probability threshold for Smart Skip?",
+    "answer": "60%: watering is skipped if the forecast rain probability in the next 24 hours is 60% or higher.",
+    "evidence": [
+      [
+        "60% or higher"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Within what range can the Smart Skip threshold be adjusted?",
+    "answer": "Between 40% and 90%.",
+    "evidence": [
+      [
+        "between 40% and 90%"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "At what temperature does Freeze Skip prevent watering?",
+    "answer": "When the forecast temperature at the start time is below 3 C.",
+    "evidence": [
+      [
+        "below 3 C"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the default soak period in Cycle & Soak?",
+    "answer": "20 minutes.",
+    "evidence": [
+      [
+        "soak period is 20 minutes"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What did the Pune pilot study find?",
+    "answer": "Across 312 homes, average outdoor water use fell by 31%.",
+    "evidence": [
+      [
+        "312 homes",
+        "31%"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What does error code E12 mean?",
+    "answer": "A flow anomaly: flow more than 25% above the learned baseline.",
+    "evidence": [
+      [
+        "E12",
+        "25%"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What happens when an E07 short circuit is detected?",
+    "answer": "The affected zone is disabled, the rest of the program continues, and the zone is re-enabled after the next successful Zone Test.",
+    "evidence": [
+      [
+        "E07 short circuit is detected"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "At what time are firmware updates installed?",
+    "answer": "At 02:00 local time (waiting if a program is running).",
+    "evidence": [
+      [
+        "02:00"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the rate limit of the v2 developer API?",
+    "answer": "60 requests per minute per controller.",
+    "evidence": [
+      [
+        "60 requests per minute"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long do OAuth access tokens last in the API?",
+    "answer": "3600 seconds (refresh tokens are valid for 30 days).",
+    "evidence": [
+      [
+        "3600 seconds"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How much does AquaPilot Pro cost?",
+    "answer": "Rs 149 per month or Rs 1,499 per year.",
+    "evidence": [
+      [
+        "Rs 149"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long is the warranty for customers with an active Pro subscription?",
+    "answer": "5 years in total.",
+    "evidence": [
+      [
+        "5 years in total"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How quickly are warranty replacements dispatched?",
+    "answer": "Within 15 business days of receiving the faulty unit.",
+    "evidence": [
+      [
+        "15 business days"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "In which firmware version was Matter support added, and what can be controlled over Matter?",
+    "answer": "Firmware 3.5.0; only manual zone start and stop are exposed over Matter.",
+    "evidence": [
+      [
+        "3.5.0",
+        "Matter"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How many additional users can the owner invite?",
+    "answer": "Up to 10 additional users (Viewer, Operator or Admin roles).",
+    "evidence": [
+      [
+        "up to 10 additional users"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long is the flow sensor's learning period before leak detection starts?",
+    "answer": "14 days.",
+    "evidence": [
+      [
+        "14 days"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What summer run time is recommended for Indore?",
+    "answer": "21 minutes per zone, every 2 days.",
+    "evidence": [
+      [
+        "Indore",
+        "21"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What crop coefficient is used for fruit trees?",
+    "answer": "0.65.",
+    "evidence": [
+      [
+        "Fruit trees",
+        "0.65"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the maximum cycle length for spray zones on clay soil?",
+    "answer": "8 minutes per cycle.",
+    "evidence": [
+      [
+        "maximum of 8 minutes"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What warranty did the legacy AquaPilot X2 have?",
+    "answer": "2 years.",
+    "evidence": [
+      [
+        "X2 (legacy)",
+        "2 years"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How much does the AquaPilot X3 controller itself cost to buy?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Does the X3 support Zigbee?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Who is the CEO of Verdant Labs?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What is the maximum flow rate in litres per minute that the flow sensor can measure?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Which iOS and Android versions does the AquaPilot app support?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Which cloud provider hosts the AquaPilot API?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "How many AquaPilot X3 units have been sold?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What is the warranty period for customers in Europe?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What colours is the X3 available in?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Does the X3 support Amazon Alexa voice commands?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  }
+]

@@ -1,0 +1,366 @@
+[
+  {
+    "question": "How many identical layers are in the Transformer encoder stack?",
+    "answer": "6 identical layers (N = 6).",
+    "evidence": [
+      [
+        "stack of",
+        "identical layers"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the dimension of the model's outputs (d_model)?",
+    "answer": "512.",
+    "evidence": [
+      [
+        "dimension",
+        "512"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How many attention heads does the base Transformer use?",
+    "answer": "8 parallel attention heads (h = 8).",
+    "evidence": [
+      [
+        "parallel attention layers"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What are d_k and d_v set to in multi-head attention?",
+    "answer": "64 each (d_model / h = 64).",
+    "evidence": [
+      [
+        "parallel attention layers",
+        "64"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What is the inner-layer dimensionality of the position-wise feed-forward network?",
+    "answer": "2048.",
+    "evidence": [
+      [
+        "2048"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Why are dot products scaled by 1/sqrt(d_k) in attention?",
+    "answer": "For large d_k the dot products grow large and push the softmax into regions with extremely small gradients; scaling counteracts this.",
+    "evidence": [
+      [
+        "extremely small gradients"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What functions are used for the positional encodings?",
+    "answer": "Sine and cosine functions of different frequencies.",
+    "evidence": [
+      [
+        "sine and cosine"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Why did the authors choose sinusoidal positional encodings over learned ones?",
+    "answer": "They may let the model extrapolate to sequence lengths longer than those seen in training; learned embeddings gave nearly identical results.",
+    "evidence": [
+      [
+        "extrapolate"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How large is the WMT 2014 English-German training set?",
+    "answer": "About 4.5 million sentence pairs.",
+    "evidence": [
+      [
+        "4.5 million"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What vocabulary was used for English-German translation?",
+    "answer": "Byte-pair encoding with a shared source-target vocabulary of about 37,000 tokens.",
+    "evidence": [
+      [
+        "37000"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How large is the WMT 2014 English-French dataset?",
+    "answer": "36 million sentences, with a 32,000 word-piece vocabulary.",
+    "evidence": [
+      [
+        "36M"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What hardware were the models trained on?",
+    "answer": "One machine with 8 NVIDIA P100 GPUs.",
+    "evidence": [
+      [
+        "P100"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long did the base model train?",
+    "answer": "100,000 steps, about 12 hours.",
+    "evidence": [
+      [
+        "12 hours"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How long did the big model train?",
+    "answer": "300,000 steps, about 3.5 days.",
+    "evidence": [
+      [
+        "3.5 days"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Which optimizer was used for training?",
+    "answer": "Adam, with beta1 = 0.9, beta2 = 0.98 and epsilon = 1e-9.",
+    "evidence": [
+      [
+        "Adam optimizer"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How many warmup steps were used in the learning-rate schedule?",
+    "answer": "4000 warmup steps.",
+    "evidence": [
+      [
+        "4000"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What residual dropout rate was used for the base model?",
+    "answer": "P_drop = 0.1.",
+    "evidence": [
+      [
+        "residual dropout"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What value of label smoothing was used?",
+    "answer": "0.1.",
+    "evidence": [
+      [
+        "label smoothing"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What BLEU score did the big Transformer get on WMT 2014 English-to-German?",
+    "answer": "28.4 BLEU.",
+    "evidence": [
+      [
+        "28.4"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What BLEU score did the big Transformer get on WMT 2014 English-to-French?",
+    "answer": "41.8 BLEU.",
+    "evidence": [
+      [
+        "41.8"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What beam search settings were used during inference?",
+    "answer": "Beam size 4 with length penalty alpha = 0.6.",
+    "evidence": [
+      [
+        "beam size"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How were checkpoints combined for the final models?",
+    "answer": "The base models averaged the last 5 checkpoints (written at 10-minute intervals); the big models averaged the last 20.",
+    "evidence": [
+      [
+        "checkpoints",
+        "averag"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Besides translation, what task was used to test whether the Transformer generalizes?",
+    "answer": "English constituency parsing.",
+    "evidence": [
+      [
+        "constituency parsing"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What dataset was used for the constituency parsing experiments?",
+    "answer": "The Wall Street Journal portion of the Penn Treebank, about 40K training sentences.",
+    "evidence": [
+      [
+        "40K"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What F1 score did the Transformer reach on parsing when trained only on WSJ?",
+    "answer": "91.3 F1.",
+    "evidence": [
+      [
+        "91.3"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "In what three ways does the Transformer use multi-head attention?",
+    "answer": "Encoder-decoder attention, self-attention in the encoder, and masked self-attention in the decoder.",
+    "evidence": [
+      [
+        "encoder-decoder attention"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How does the decoder prevent positions from attending to subsequent positions?",
+    "answer": "By masking (setting to -infinity) illegal connections in the softmax, combined with offsetting output embeddings by one position.",
+    "evidence": [
+      [
+        "masking"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "What three criteria did the authors use to compare self-attention with recurrent and convolutional layers?",
+    "answer": "Computational complexity per layer, how much computation can be parallelized, and the path length between long-range dependencies.",
+    "evidence": [
+      [
+        "path length"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "Where is dropout applied in the Transformer besides sub-layer outputs?",
+    "answer": "To the sums of the embeddings and the positional encodings in both encoder and decoder stacks.",
+    "evidence": [
+      [
+        "sums of the embeddings"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How are the embedding weights shared in the model?",
+    "answer": "The same weight matrix is shared between the two embedding layers and the pre-softmax linear transformation; embeddings are multiplied by sqrt(d_model).",
+    "evidence": [
+      [
+        "pre-softmax linear transformation"
+      ]
+    ],
+    "answerable": true
+  },
+  {
+    "question": "How many parameters does GPT-3 have?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What BLEU score did the Transformer achieve on WMT 2016 Romanian-English?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Which cloud provider was used to train the models?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What was the total cost in US dollars of training the big model?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "How well does the Transformer perform on ImageNet image classification?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What accuracy does the model achieve on the GLUE benchmark?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What learning rate was used for fine-tuning on SQuAD?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "Which universities did the authors receive their PhDs from?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "How many GPUs were used to train GPT-2?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  },
+  {
+    "question": "What is the masked language modelling objective used in BERT pre-training?",
+    "answer": "",
+    "evidence": [],
+    "answerable": false
+  }
+]

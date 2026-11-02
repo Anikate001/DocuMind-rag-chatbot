@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from database import supabase
+from text_utils import format_context  # re-exported for app.py
 
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -20,18 +21,3 @@ def retrieve_relevant_chunks(query: str, match_count: int = 5) -> list[dict]:
 
     return results.data  # list of {id, content, filename, chunk_index, similarity}
 
-def format_context(chunks: list[dict]) -> tuple[str, list[str]]:
-    """
-    Format retrieved chunks into a context string for the LLM
-    and return citation references.
-    """
-    context_parts = []
-    citations = []
-
-    for i, chunk in enumerate(chunks):
-        source = f"[{i+1}] {chunk['filename']} (chunk {chunk['chunk_index']+1})"
-        citations.append(source)
-        context_parts.append(f"Source {i+1} ({chunk['filename']}):\n{chunk['content']}")
-
-    context = "\n\n---\n\n".join(context_parts)
-    return context, citations

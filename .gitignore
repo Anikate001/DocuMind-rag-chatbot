@@ -33,3 +33,11 @@ list_models.py
 out.txt
 out_supabase.txt
 dummy_knowledge.pdf
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Eval cache (re-created on each run)
+eval/cache.json
+eval/*.pdf
+!eval/aquapilot_x3_manual.pdf

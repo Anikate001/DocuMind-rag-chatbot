@@ -16,3 +16,5 @@ SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.3"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "100"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "10"))
 MAX_RESPONSE_TOKENS = int(os.getenv("MAX_RESPONSE_TOKENS", "1024"))
+# Larger PDFs can exhaust the 1 GB free Streamlit Cloud instance
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))

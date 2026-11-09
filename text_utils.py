@@ -45,3 +45,36 @@ def format_context(chunks: list[dict]) -> tuple[str, list[str]]:
 
     context = "\n\n---\n\n".join(context_parts)
     return context, citations
+
+
+# ---------------------------------------------------------------------------
+# Per-visitor document scoping
+#
+# The public demo shares one database. Each browser session gets a short id, and
+# its uploads are stored as "<session id>__<filename>". A visitor sees shared
+# documents (no prefix, e.g. the sample manual) plus their own uploads only.
+# ---------------------------------------------------------------------------
+SESSION_SEP = "__"
+SESSION_ID_LEN = 8
+
+
+def _session_prefix(stored_name: str) -> str | None:
+    head, sep, _ = stored_name.partition(SESSION_SEP)
+    if sep and len(head) == SESSION_ID_LEN and head.isalnum():
+        return head
+    return None
+
+
+def scoped_name(session_id: str, filename: str) -> str:
+    return f"{session_id}{SESSION_SEP}{filename}"
+
+
+def display_name(stored_name: str) -> str:
+    """The filename a visitor uploaded, without the session prefix."""
+    return stored_name.partition(SESSION_SEP)[2] if _session_prefix(stored_name) else stored_name
+
+
+def visible_to(stored_name: str, session_id: str | None) -> bool:
+    """Shared documents are visible to everyone; scoped ones only to their session."""
+    owner = _session_prefix(stored_name)
+    return owner is None or owner == session_id

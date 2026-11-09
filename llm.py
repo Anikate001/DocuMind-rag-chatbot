@@ -15,7 +15,7 @@ def answer_with_citations(query: str, context: str, citations: list[str]) -> str
     system_prompt = """You are a precise document assistant. Answer questions ONLY using the provided source excerpts.
 
 Rules:
-- Cite sources using [1], [2], [3] etc. after each claim
+- Cite sources using plain square brackets like [1], [2], [3] after each claim (never 【1】)
 - If the answer is not in the sources, say "I couldn't find that in the uploaded documents"
 - Never make up information not present in the sources
 - Be concise but complete
@@ -44,8 +44,10 @@ Answer with citations:"""
         **extra,
     )
 
-    answer = response.choices[0].message.content
+    answer = (response.choices[0].message.content or "").strip()
+    # gpt-oss sometimes writes full-width citation brackets; normalise them
+    answer = answer.replace("\u3010", "[").replace("\u3011", "]")
 
-    # Append citation legend
-    citation_legend = "\n\n**Sources used:**\n" + "\n".join(citations)
+    # Append citation legend as a real Markdown list (single newlines would run together)
+    citation_legend = "\n\n**Sources used:**\n\n" + "\n".join(f"- {c}" for c in citations)
     return answer + citation_legend

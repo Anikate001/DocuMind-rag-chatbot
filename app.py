@@ -1,9 +1,12 @@
 import streamlit as st
 import time
+import uuid
+from config import MAX_UPLOAD_MB
 from ingest import ingest_pdf
 from retriever import retrieve_relevant_chunks, format_context
 from llm import answer_with_citations
 from database import supabase
+from text_utils import display_name, visible_to
 
 # ─────────────────────────────────────────────
 # Page Config
@@ -26,6 +29,13 @@ if "questions_asked" not in st.session_state:
     st.session_state.questions_asked = 0
 if "last_chunks" not in st.session_state:
     st.session_state.last_chunks = []
+if "session_id" not in st.session_state:
+    # Scopes this visitor's uploads so other visitors never see them
+    st.session_state.session_id = uuid.uuid4().hex[:8]
+
+# Count a question on the run it is submitted, before the stats bar is drawn
+if st.session_state.get("chat_q"):
+    st.session_state.questions_asked += 1
 
 # ─────────────────────────────────────────────
 # CSS Injection
@@ -507,15 +517,29 @@ st.markdown("""
 # Helper: Fetch live stats
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=10)
-def get_stats():
+def get_visible_documents(session_id):
+    """Shared documents plus this session's uploads, newest first."""
     try:
-        docs = supabase.table("documents").select("id", count="exact").execute()
-        chunks = supabase.table("chunks").select("id", count="exact").execute()
-        return docs.count or 0, chunks.count or 0
+        docs = supabase.table("documents").select("filename, uploaded_at").order("uploaded_at", desc=True).execute()
+        return [d for d in (docs.data or []) if visible_to(d["filename"], session_id)]
     except Exception:
-        return 0, 0
+        return []
 
-doc_count, chunk_count = get_stats()
+
+@st.cache_data(ttl=10)
+def get_chunk_count(filenames):
+    if not filenames:
+        return 0
+    try:
+        res = supabase.table("chunks").select("id", count="exact").in_("filename", list(filenames)).execute()
+        return res.count or 0
+    except Exception:
+        return 0
+
+
+visible_docs = get_visible_documents(st.session_state.session_id)
+doc_count = len(visible_docs)
+chunk_count = get_chunk_count(tuple(d["filename"] for d in visible_docs))
 
 # ─────────────────────────────────────────────
 # Stats Bar
@@ -545,13 +569,16 @@ with st.sidebar:
 
     if uploaded_files:
         for uploaded_file in uploaded_files:
+            if uploaded_file.size > MAX_UPLOAD_MB * 1024 * 1024:
+                st.warning(f"{uploaded_file.name} is over {MAX_UPLOAD_MB} MB, so it was skipped.")
+                continue
             if uploaded_file.name not in st.session_state.ingested_files:
                 # Processing animation placeholder
                 progress_placeholder = st.empty()
                 # Use a mutable list to avoid nonlocal issues
                 steps_state_container = [["pending"] * 5]
                 step_labels = [
-                    "Uploading to storage",
+                    "Reading PDF",
                     "Extracting text",
                     "Creating chunks",
                     "Generating embeddings",
@@ -591,7 +618,8 @@ with st.sidebar:
                     result = ingest_pdf(
                         uploaded_file.read(),
                         uploaded_file.name,
-                        progress_callback=on_progress
+                        progress_callback=on_progress,
+                        session_id=st.session_state.session_id,
                     )
                     # Mark all done
                     steps_state_container[0] = ["done"] * 5
@@ -636,22 +664,21 @@ with st.sidebar:
     st.divider()
 
     # All Documents in DB
-    st.markdown('<div class="sidebar-section-label">📚 ALL DOCUMENTS IN DB</div>', unsafe_allow_html=True)
-    try:
-        docs = supabase.table("documents").select("filename, uploaded_at").order("uploaded_at", desc=True).execute()
-        if docs.data:
-            for doc in docs.data:
-                date_str = doc.get("uploaded_at", "")[:10] if doc.get("uploaded_at") else ""
-                st.markdown(f"""
-                <div class="doc-item">
-                    <span class="doc-icon">◈</span>
-                    <span class="doc-name">{doc['filename']}</span>
-                    <span class="doc-date">{date_str}</span>
-                </div>""", unsafe_allow_html=True)
-        else:
-            st.markdown('<p style="color:#444; font-size:0.8rem;">No documents uploaded yet</p>', unsafe_allow_html=True)
-    except Exception:
+    st.markdown('<div class="sidebar-section-label">📚 DOCUMENTS YOU CAN SEARCH</div>', unsafe_allow_html=True)
+    if visible_docs:
+        for doc in visible_docs:
+            date_str = doc.get("uploaded_at", "")[:10] if doc.get("uploaded_at") else ""
+            mine = display_name(doc["filename"]) != doc["filename"]
+            label = "yours" if mine else "sample"
+            st.markdown(f"""
+            <div class="doc-item">
+                <span class="doc-icon">◈</span>
+                <span class="doc-name">{display_name(doc['filename'])}</span>
+                <span class="doc-date">{label} · {date_str}</span>
+            </div>""", unsafe_allow_html=True)
+    else:
         st.markdown('<p style="color:#444; font-size:0.8rem;">No documents yet</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#555; font-size:0.72rem; margin-top:8px;">Your uploads are only visible in this browser session. Please don\'t upload confidential documents to this public demo.</p>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # Main Chat + Chunks Panel
@@ -659,13 +686,14 @@ with st.sidebar:
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    # Display chat history
+    # Intro card, cleared as soon as the first question is asked
+    intro = st.empty()
     if not st.session_state.messages:
-        st.markdown("""
+        intro.markdown("""
         <div class="empty-state">
             <div class="empty-icon">◈</div>
             <h3 class="empty-title">Ready to explore your documents</h3>
-            <p class="empty-subtitle">Upload a PDF in the sidebar, then ask anything about it.</p>
+            <p class="empty-subtitle">Ask about the sample AquaPilot X3 manual, or upload your own PDF in the sidebar.</p>
             <div class="suggestion-chips">
                 <div class="chip">Summarize this document</div>
                 <div class="chip">What are the key findings?</div>
@@ -673,27 +701,28 @@ with col1:
             </div>
         </div>
         """, unsafe_allow_html=True)
-    else:
+    # Messages go in a container placed above the input, so new answers appear
+    # above the chat box instead of below it
+    history = st.container()
+    with history:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Chat input
-    if prompt := st.chat_input("Ask a question about your documents..."):
-        # Increment questions counter
-        st.session_state.questions_asked += 1
-
+    # Chat input (the questions counter is updated at the top of the script)
+    if prompt := st.chat_input("Ask a question about your documents...", key="chat_q"):
+        intro.empty()
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
+        with history, st.chat_message("user"):
             st.markdown(prompt)
 
         # Generate answer
-        with st.chat_message("assistant"):
+        with history, st.chat_message("assistant"):
             with st.spinner("Searching documents..."):
                 try:
                     # Retrieve relevant chunks
-                    chunks = retrieve_relevant_chunks(prompt, match_count=5)
+                    chunks = retrieve_relevant_chunks(prompt, session_id=st.session_state.session_id)
                     st.session_state.last_chunks = chunks
 
                     if not chunks:

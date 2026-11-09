@@ -153,7 +153,7 @@ $$;
 3. Copy the **Project URL** and **service_role key** from *Settings → API* into `.env`. Keep the service-role key
    out of version control: it bypasses Row Level Security.
 
-Raw PDFs are also uploaded to a public Storage bucket named `documents`, created automatically on first upload.
+Raw PDFs are not stored: only their text chunks and embeddings go into the database.
 
 </details>
 
@@ -213,8 +213,9 @@ DocuMind-rag-chatbot/
 
 - **Row Level Security:** the anon key was blocked by RLS on inserts and Storage, so the app uses the service-role
   key; production use should add RLS policies instead.
-- **Storage bucket:** the SDK's `create_bucket()` failed with signature mismatches, so the bucket is created through
-  the REST API.
+- **Per-visitor isolation:** the public demo shares one database, so each browser session gets a short id and
+  its uploads are stored under it. Visitors see the sample manual plus their own uploads, never anyone else's.
+  Raw PDFs are not kept, and uploads are capped at 10 MB (`MAX_UPLOAD_MB`).
 - **Model retirement:** Groq retired `llama3-70b-8192`, then `llama-3.3-70b-versatile` (16 Aug 2026). The model is
   now a single setting, defaulting to Groq's recommended `openai/gpt-oss-120b`.
 - **Cold start:** the 90 MB embedding model loads once at import and is cached after the first download.

@@ -28,6 +28,7 @@ Thumbs.db
 
 # Test/temp files
 test_*.py
+!tests/test_*.py
 fix_*.py
 list_models.py
 out.txt

@@ -1,12 +1,15 @@
 import streamlit as st
 
-from retro_ui import arcade_hero, energy_can_egg, inject_theme
+from retro_ui import arcade_hero, energy_can_egg, inject_theme, pixel_svg, xp_bar
+import re
+import threading
 import time
 import uuid
 from config import MAX_UPLOAD_MB
 from ingest import ingest_pdf
 from retriever import retrieve_relevant_chunks, format_context
 from llm import answer_with_citations
+from embeddings import get_embedder
 from database import supabase
 from text_utils import display_name, visible_to
 
@@ -19,6 +22,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="auto"
 )
+
+@st.cache_resource(show_spinner=False)
+def _warm_embedder():
+    """Load the embedding model in the background so the first question isn't slow."""
+    threading.Thread(target=get_embedder, daemon=True, name="warm-embedder").start()
+    return True
+
+
+_warm_embedder()
 
 # ─────────────────────────────────────────────
 # Session State
@@ -39,6 +51,14 @@ if "session_id" not in st.session_state:
 if st.session_state.get("chat_q"):
     st.session_state.questions_asked += 1
 
+SUGGESTIONS = ["Summarize this document", "What are the key findings?", "List all recommendations"]
+
+
+def _ask(question):
+    """Suggestion chips ask their question as if it were typed."""
+    st.session_state.pending_q = question
+    st.session_state.questions_asked += 1
+
 # ─────────────────────────────────────────────
 # CSS Injection
 # ─────────────────────────────────────────────
@@ -50,7 +70,11 @@ st.markdown("""
 /* ── Hide Streamlit defaults ── */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: hidden !important;}
+header[data-testid="stHeader"] {background: transparent !important;}
+/* the header holds the button that reopens the sidebar, so it must stay visible */
+[data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"] {visibility: visible !important; display: flex !important;}
+[data-testid="stToolbarActions"], [data-testid="stMainMenu"], .stAppDeployButton {display: none !important;}
 .stDeployButton {display: none;}
 
 /* ── Root / body ── */
@@ -66,7 +90,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 
 /* ── Custom Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-track { background: #05020F; }
 ::-webkit-scrollbar-thumb { background: #FF2E97; border-radius: 0; }
 
 /* ── Buttons ── */
@@ -98,7 +122,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     border-color: #FF2E97 !important;
 }
 [data-testid="stFileUploader"] label {
-    color: #888 !important;
+    color: #C9BEE8 !important;
     font-family: 'VT323', monospace !important;
 }
 [data-testid="stFileUploader"] button {
@@ -246,7 +270,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     line-height: 1.1;
 }
 .app-subtitle {
-    color: #888;
+    color: #C9BEE8;
     font-size: 0.85rem;
     margin: 4px 0 0;
     font-family: 'VT323', monospace;
@@ -307,7 +331,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     white-space: nowrap;
 }
 .success-stats {
-    color: #666;
+    color: #B8ADD6;
     font-size: 0.72rem;
     margin-top: 2px;
 }
@@ -335,7 +359,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 .stat-item {
     text-align: center;
     padding: 14px 8px;
-    background: #111;
+    background: #05020F;
     border: 1px solid #1C0D40;
     border-radius: 0;
 }
@@ -348,7 +372,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .stat-label {
     font-size: 0.7rem;
-    color: #555;
+    color: #9A8FBF;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 2px;
@@ -375,7 +399,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     margin: 0 0 8px;
 }
 .empty-subtitle {
-    color: #666;
+    color: #B8ADD6;
     font-size: 0.9rem;
     margin: 0;
 }
@@ -389,7 +413,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 .chip {
     background: #160A33;
     border: 1px solid #2A1650;
-    color: #888;
+    color: #C9BEE8;
     padding: 8px 16px;
     border-radius: 0;
     font-size: 0.8rem;
@@ -404,8 +428,8 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 
 /* ── Chunk cards ── */
 .chunk-card {
-    background: #111;
-    border: 1px solid #222;
+    background: #05020F;
+    border: none;
     border-radius: 0;
     padding: 12px;
     margin: 6px 0;
@@ -429,7 +453,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     flex-shrink: 0;
 }
 .chunk-file {
-    color: #888;
+    color: #C9BEE8;
     font-size: 0.78rem;
     flex: 1;
     overflow: hidden;
@@ -438,9 +462,9 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .sim-high { color: #39FF14; font-size: 0.75rem; font-weight: 600; }
 .sim-mid  { color: #FFE600; font-size: 0.75rem; font-weight: 600; }
-.sim-low  { color: #888;    font-size: 0.75rem; font-weight: 600; }
+.sim-low  { color: #B8ADD6;    font-size: 0.75rem; font-weight: 600; }
 .chunk-preview {
-    color: #666;
+    color: #B8ADD6;
     font-size: 0.78rem;
     line-height: 1.5;
     margin: 8px 0;
@@ -448,14 +472,14 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     padding-left: 8px;
 }
 .chunk-footer {
-    color: #333;
+    color: #9A8FBF;
     font-size: 0.7rem;
 }
 
 /* ── Processing card ── */
 .processing-card {
-    background: #111;
-    border: 1px solid #222;
+    background: #05020F;
+    border: none;
     border-radius: 0;
     padding: 16px;
     margin: 8px 0;
@@ -492,7 +516,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .panel-caption {
     font-size: 0.75rem;
-    color: #555;
+    color: #9A8FBF;
     margin-bottom: 12px;
 }
 </style>
@@ -690,18 +714,17 @@ with col1:
     # Intro card, cleared as soon as the first question is asked
     intro = st.empty()
     if not st.session_state.messages:
-        intro.markdown("""
+        intro_box = intro.container()
+        intro_box.markdown("""
         <div class="empty-state">
-            <div class="empty-icon">◈</div>
+            <div class="empty-icon">{cab}</div>
             <h3 class="empty-title">Ready to explore your documents</h3>
             <p class="empty-subtitle">Ask about the sample AquaPilot X3 manual, or upload your own PDF in the sidebar.</p>
-            <div class="suggestion-chips">
-                <div class="chip">Summarize this document</div>
-                <div class="chip">What are the key findings?</div>
-                <div class="chip">List all recommendations</div>
-            </div>
         </div>
-        """, unsafe_allow_html=True)
+        """.replace("{cab}", pixel_svg("cabinet", 7, "Arcade cabinet")), unsafe_allow_html=True)
+        chip_cols = intro_box.columns(len(SUGGESTIONS))
+        for col, q in zip(chip_cols, SUGGESTIONS):
+            col.button(q, key=f"chip_{q}", on_click=_ask, args=(q,), use_container_width=True)
     # Messages go in a container placed above the input, so new answers appear
     # above the chat box instead of below it
     history = st.container()
@@ -711,7 +734,8 @@ with col1:
                 st.markdown(message["content"])
 
     # Chat input (the questions counter is updated at the top of the script)
-    if prompt := st.chat_input("Ask a question about your documents...", key="chat_q"):
+    typed = st.chat_input("Ask a question about your documents...", key="chat_q")
+    if prompt := (typed or st.session_state.pop("pending_q", None)):
         intro.empty()
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -720,7 +744,7 @@ with col1:
 
         # Generate answer
         with history, st.chat_message("assistant"):
-            with st.spinner("Searching documents..."):
+            with st.spinner("Scanning documents..."):
                 try:
                     # Retrieve relevant chunks
                     chunks = retrieve_relevant_chunks(prompt, session_id=st.session_state.session_id)
@@ -734,14 +758,14 @@ with col1:
                         # Get LLM answer
                         answer = answer_with_citations(prompt, context, citations)
 
-                    # Typing animation — stream character by character
-                    answer_placeholder = st.empty()
-                    displayed = ""
-                    for char in answer:
-                        displayed += char
-                        answer_placeholder.markdown(displayed + "▌")
-                        time.sleep(0.008)
-                    answer_placeholder.markdown(displayed)
+                    # Typing effect, streamed word by word (one update per word, not per character)
+                    def _words(text):
+                        for token in re.split(r"(\s+)", text):
+                            yield token
+                            if token.strip():
+                                time.sleep(0.015)
+
+                    st.write_stream(_words(answer))
 
                     st.session_state.messages.append({"role": "assistant", "content": answer})
 
@@ -749,7 +773,7 @@ with col1:
                     st.error(f"Error: {str(e)}")
 
 with col2:
-    st.markdown('<div class="panel-heading">🔍 Retrieved Chunks</div>', unsafe_allow_html=True)
+    st.markdown('<div class="panel-heading">&#9654; RETRIEVED CHUNKS</div>', unsafe_allow_html=True)
     st.markdown('<div class="panel-caption">What the model actually looked at</div>', unsafe_allow_html=True)
 
     chunks_to_show = st.session_state.last_chunks
@@ -764,19 +788,23 @@ with col2:
             else:
                 sim_class = "sim-low"
 
-            content_preview = chunk.get("content", "")[:200].replace("<", "&lt;").replace(">", "&gt;")
+            raw = chunk.get("content", "")
+            content_preview = raw[:200].replace("<", "&lt;").replace(">", "&gt;")
+            if len(raw) > 200:
+                content_preview = content_preview.rstrip(" .") + "&hellip;"
             fname = chunk.get("filename", "unknown")
             cidx = chunk.get("chunk_index", 0)
 
             st.markdown(f"""
             <div class="chunk-card">
                 <div class="chunk-header">
-                    <span class="chunk-rank">[{i+1}]</span>
+                    <span class="chunk-rank">#{i+1}</span>
                     <span class="chunk-file">{fname}</span>
                     <span class="{sim_class}">{sim:.0%}</span>
                 </div>
-                <div class="chunk-preview">{content_preview}...</div>
-                <div class="chunk-footer">chunk #{cidx + 1}</div>
+                <div class="chunk-preview">{content_preview}</div>
+                {xp_bar(sim, "#39FF14" if sim > 0.7 else "#FFE600" if sim > 0.5 else "#B26BFF")}
+                <div class="chunk-footer">chunk #{cidx + 1} &middot; match {sim:.0%}</div>
             </div>""", unsafe_allow_html=True)
     else:
         st.markdown('<p style="color:#B8ADD6; font-size:0.8rem; text-align:center; margin-top:24px;">Ask a question to see retrieved chunks here</p>', unsafe_allow_html=True)

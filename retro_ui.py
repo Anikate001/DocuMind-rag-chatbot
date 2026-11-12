@@ -7,6 +7,8 @@ plain HTML/CSS, so it works on Streamlit Community Cloud with no extra packages.
 """
 from __future__ import annotations
 
+from functools import lru_cache
+
 import streamlit as st
 
 # ── palette ──────────────────────────────────────────────────────────
@@ -158,6 +160,7 @@ SPRITES: dict[str, tuple[list[str], dict[str, str]]] = {
 }
 
 
+@lru_cache(maxsize=128)
 def pixel_svg(name: str, px: int = 4, label: str | None = None) -> str:
     """Return a crisp inline SVG of a sprite, `px` screen pixels per art pixel."""
     rows, palette = SPRITES[name]
@@ -183,6 +186,7 @@ def pixel_svg(name: str, px: int = 4, label: str | None = None) -> str:
     )
 
 
+@lru_cache(maxsize=4)
 def sunset_scene(rider: bool = True) -> str:
     """A pixel desert at sunset: banded sun, mesas, dunes and a lone rider."""
     W, H = 160, 44
@@ -265,7 +269,13 @@ def sticker_row(names: list[str], px: int = 4) -> str:
 
 def inject_theme() -> None:
     """Global arcade CSS. Call once near the top of the app, after set_page_config."""
-    st.markdown(
+    st.markdown(_theme_css(), unsafe_allow_html=True)
+
+
+@lru_cache(maxsize=1)
+def _theme_css() -> str:
+    """Built once per process; Streamlit reruns the script on every interaction."""
+    return (
         f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
@@ -370,6 +380,12 @@ textarea::placeholder {{ color: rgba(242,233,255,0.45) !important; }}
   box-shadow: 0 -4px 0 0 var(--magenta), 0 4px 0 0 var(--magenta), -4px 0 0 0 var(--magenta), 4px 0 0 0 var(--magenta),
     0 0 24px rgba(255,46,151,0.25) !important;
 }}
+[data-testid="stHeader"] {{ background: transparent !important; }}
+[data-testid="stToolbar"] * {{ color: var(--text) !important; }}
+.st-key-btn_approve .stButton > button, .st-key-btn_approve button[data-testid] {{ background: var(--green) !important; color: var(--night) !important; box-shadow: 0 var(--px) 0 0 #1A7A08, 0 0 18px rgba(57,255,20,.45) !important; }}
+.st-key-btn_revise .stButton > button, .st-key-btn_revise button[data-testid] {{ background: var(--yellow) !important; color: var(--night) !important; box-shadow: 0 var(--px) 0 0 #8A7C00 !important; }}
+.st-key-btn_reject .stButton > button, .st-key-btn_reject button[data-testid] {{ background: var(--red) !important; color: #fff !important; box-shadow: 0 var(--px) 0 0 #7A0F22 !important; }}
+.st-key-btn_approve button[data-testid] p, .st-key-btn_revise button[data-testid] p {{ color: var(--night) !important; }}
 .stat-item {{
   border-radius: 0 !important; border: none !important; background: #05020F !important;
   box-shadow: 0 -4px 0 0 var(--cyan), 0 4px 0 0 var(--cyan), -4px 0 0 0 var(--cyan), 4px 0 0 0 var(--cyan),
@@ -388,6 +404,27 @@ textarea::placeholder {{ color: rgba(242,233,255,0.45) !important; }}
 }}
 [data-testid="stChatMessage"] [data-testid^="stChatMessageAvatar"], [data-testid="stChatMessage"] img {{ border-radius: 0 !important; }}
 [data-testid="stFileUploaderDropzone"] {{ border-radius: 0 !important; border: 2px dashed var(--cyan) !important; background: #0E0626 !important; }}
+.px-num, .px-num * {{ font-family: 'Press Start 2P', monospace !important; font-size-adjust: none !important; font-size: 1.05rem !important; }}
+.chunk-card {{
+  background: #05020F !important; border: none !important; border-radius: 0 !important; margin: 10px 4px !important;
+  box-shadow: 0 -3px 0 0 var(--panel2), 0 3px 0 0 var(--panel2), -3px 0 0 0 var(--panel2), 3px 0 0 0 var(--panel2) !important;
+}}
+.chunk-card:hover {{ box-shadow: 0 -3px 0 0 var(--cyan), 0 3px 0 0 var(--cyan), -3px 0 0 0 var(--cyan), 3px 0 0 0 var(--cyan), 0 0 16px rgba(0,240,255,.3) !important; }}
+.chunk-card .xp-bar {{ margin: 6px 0 4px; }} .chunk-card .xp-cell {{ height: 6px; }}
+.chunk-rank {{ color: var(--yellow) !important; }}
+[class*="st-key-chip_"] button, [class*="st-key-chip_"] button[data-testid] {{
+  background: var(--panel) !important; color: var(--cyan) !important; min-height: 44px;
+  box-shadow: 0 -3px 0 0 var(--cyan), 0 3px 0 0 var(--cyan), -3px 0 0 0 var(--cyan), 3px 0 0 0 var(--cyan) !important;
+}}
+[class*="st-key-chip_"] button p {{ font-family: 'VT323', monospace !important; font-size: 1.1rem !important; text-transform: none; color: var(--cyan) !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.1; }}
+[class*="st-key-chip_"] button:hover {{ background: var(--cyan) !important; }}
+[class*="st-key-chip_"] button:hover p {{ color: var(--night) !important; }}
+.empty-icon .px-sprite {{ filter: drop-shadow(0 0 12px rgba(255,46,151,.6)); }}
+[data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapsedControl"] button {{
+  background: var(--magenta) !important; color: #fff !important; border-radius: 0 !important;
+  box-shadow: 0 3px 0 0 #8A0E4D, 0 0 14px rgba(255,46,151,.6) !important; min-width: 40px; min-height: 40px;
+}}
+[data-testid="stExpandSidebarButton"] *, [data-testid="stSidebarCollapsedControl"] button * {{ color: #fff !important; }}
 /* sliders: square thumb */
 [data-testid="stSlider"] [role="slider"] {{
   border-radius: 0 !important; background: var(--yellow) !important;
@@ -495,8 +532,7 @@ textarea::placeholder {{ color: rgba(242,233,255,0.45) !important; }}
   .arcade-hero {{ min-height: 260px; }}
 }}
 </style>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
 

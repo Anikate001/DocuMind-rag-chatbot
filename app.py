@@ -1,4 +1,6 @@
 import streamlit as st
+
+from retro_ui import arcade_hero, energy_can_egg, inject_theme
 import time
 import uuid
 from config import MAX_UPLOAD_MB
@@ -13,9 +15,9 @@ from text_utils import display_name, visible_to
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="DocuMind — RAG Chatbot",
-    page_icon="◈",
+    page_icon="🕹️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"
 )
 
 # ─────────────────────────────────────────────
@@ -43,7 +45,7 @@ if st.session_state.get("chat_q"):
 st.markdown("""
 <style>
 /* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 
 /* ── Hide Streamlit defaults ── */
 #MainMenu {visibility: hidden;}
@@ -53,9 +55,9 @@ header {visibility: hidden !important;}
 
 /* ── Root / body ── */
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
-    background-color: #0A0A0A !important;
-    color: #F0F0F0;
-    font-family: 'Inter', sans-serif;
+    background-color: #0B0420 !important;
+    color: #F2E9FF;
+    font-family: 'VT323', monospace;
 }
 .main .block-container {
     padding-top: 1rem;
@@ -65,107 +67,107 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 /* ── Custom Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #FF6B2B; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: #FF2E97; border-radius: 0; }
 
 /* ── Buttons ── */
 .stButton > button {
     background: transparent !important;
-    border: 1px solid #FF6B2B !important;
-    color: #FF6B2B !important;
-    border-radius: 8px !important;
-    font-family: 'Inter', sans-serif !important;
+    border: 1px solid #FF2E97 !important;
+    color: #FF2E97 !important;
+    border-radius: 0 !important;
+    font-family: 'VT323', monospace !important;
     font-weight: 500 !important;
     transition: all 0.3s ease !important;
     padding: 6px 20px !important;
 }
 .stButton > button:hover {
-    background: #FF6B2B !important;
-    color: #0A0A0A !important;
-    box-shadow: 0 0 20px rgba(255,107,43,0.4) !important;
+    background: #FF2E97 !important;
+    color: #0B0420 !important;
+    box-shadow: 0 0 20px rgba(255,46,151,0.4) !important;
 }
 
 /* ── File Uploader ── */
 [data-testid="stFileUploader"] {
-    background: #1A1A1A !important;
-    border: 1px dashed #2A2A2A !important;
-    border-radius: 12px !important;
+    background: #160A33 !important;
+    border: 1px dashed #2A1650 !important;
+    border-radius: 0 !important;
     transition: border-color 0.3s !important;
     padding: 10px !important;
 }
 [data-testid="stFileUploader"]:hover {
-    border-color: #FF6B2B !important;
+    border-color: #FF2E97 !important;
 }
 [data-testid="stFileUploader"] label {
     color: #888 !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'VT323', monospace !important;
 }
 [data-testid="stFileUploader"] button {
     background: transparent !important;
-    border: 1px solid #FF6B2B !important;
-    color: #FF6B2B !important;
-    border-radius: 8px !important;
+    border: 1px solid #FF2E97 !important;
+    color: #FF2E97 !important;
+    border-radius: 0 !important;
 }
 
 /* ── Chat Messages ── */
 [data-testid="stChatMessage"] {
-    background: #1A1A1A !important;
-    border: 1px solid #2A2A2A !important;
-    border-radius: 12px !important;
+    background: #160A33 !important;
+    border: 1px solid #2A1650 !important;
+    border-radius: 0 !important;
     margin: 8px 0 !important;
     padding: 12px 16px !important;
 }
 [data-testid="stChatMessage"][data-testid*="user"],
 .stChatMessage:has([data-testid="chatAvatarIcon-user"]) {
-    border-left: 3px solid #FF6B2B !important;
+    border-left: 3px solid #FF2E97 !important;
 }
 [data-testid="stChatMessage"][data-testid*="assistant"],
 .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) {
-    border-left: 3px solid #2ECC71 !important;
+    border-left: 3px solid #39FF14 !important;
 }
 
 /* ── Chat Input ── */
 [data-testid="stChatInput"] {
-    background: #1A1A1A !important;
-    border-radius: 12px !important;
+    background: #160A33 !important;
+    border-radius: 0 !important;
 }
 [data-testid="stChatInput"] textarea {
-    background: #1A1A1A !important;
-    border: 1px solid #2A2A2A !important;
-    border-radius: 12px !important;
-    color: #F0F0F0 !important;
-    font-family: 'Inter', sans-serif !important;
+    background: #160A33 !important;
+    border: 1px solid #2A1650 !important;
+    border-radius: 0 !important;
+    color: #F2E9FF !important;
+    font-family: 'VT323', monospace !important;
 }
 [data-testid="stChatInput"] textarea:focus {
-    border-color: #FF6B2B !important;
-    box-shadow: 0 0 0 3px rgba(255,107,43,0.15) !important;
+    border-color: #FF2E97 !important;
+    box-shadow: 0 0 0 3px rgba(255,46,151,0.15) !important;
 }
 [data-testid="stChatInput"] button {
-    background: #FF6B2B !important;
-    color: #0A0A0A !important;
-    border-radius: 8px !important;
+    background: #FF2E97 !important;
+    color: #0B0420 !important;
+    border-radius: 0 !important;
 }
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: #0D0D0D !important;
-    border-right: 1px solid #1E1E1E !important;
+    background: #0B0420 !important;
+    border-right: 1px solid #1C0D40 !important;
 }
 [data-testid="stSidebar"] [data-testid="stMarkdown"] {
-    color: #F0F0F0;
+    color: #F2E9FF;
 }
 [data-testid="stSidebar"] .stDivider {
-    border-color: #1E1E1E !important;
+    border-color: #1C0D40 !important;
 }
 
 /* ── Expanders ── */
 [data-testid="stExpander"] {
-    background: #1A1A1A !important;
-    border: 1px solid #2A2A2A !important;
-    border-radius: 8px !important;
+    background: #160A33 !important;
+    border: 1px solid #2A1650 !important;
+    border-radius: 0 !important;
 }
 [data-testid="stExpander"] summary {
-    color: #F0F0F0 !important;
-    font-family: 'Inter', sans-serif !important;
+    color: #F2E9FF !important;
+    font-family: 'VT323', monospace !important;
 }
 [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
     color: #CCC !important;
@@ -173,27 +175,27 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 
 /* ── Metrics ── */
 [data-testid="stMetric"] {
-    background: #1A1A1A !important;
-    border: 1px solid #2A2A2A !important;
-    border-radius: 10px !important;
+    background: #160A33 !important;
+    border: 1px solid #2A1650 !important;
+    border-radius: 0 !important;
     padding: 12px !important;
 }
 
 /* ── Spinner override ── */
 .stSpinner > div > div {
-    border-top-color: #FF6B2B !important;
+    border-top-color: #FF2E97 !important;
 }
 
 /* ── Select box, text input ── */
 .stSelectbox > div > div, .stTextInput > div > div > input {
-    background: #1A1A1A !important;
-    border: 1px solid #2A2A2A !important;
-    color: #F0F0F0 !important;
-    border-radius: 8px !important;
+    background: #160A33 !important;
+    border: 1px solid #2A1650 !important;
+    color: #F2E9FF !important;
+    border-radius: 0 !important;
 }
 .stSelectbox > div > div:focus-within, .stTextInput > div > div > input:focus {
-    border-color: #FF6B2B !important;
-    box-shadow: 0 0 0 3px rgba(255,107,43,0.15) !important;
+    border-color: #FF2E97 !important;
+    box-shadow: 0 0 0 3px rgba(255,46,151,0.15) !important;
 }
 
 /* ─────────────── CUSTOM COMPONENT STYLES ─────────────── */
@@ -202,7 +204,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 .app-header {
     position: relative;
     padding: 24px 0 16px;
-    border-bottom: 1px solid #1E1E1E;
+    border-bottom: 1px solid #1C0D40;
     margin-bottom: 24px;
 }
 .header-glow {
@@ -212,7 +214,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     transform: translateX(-50%);
     width: 300px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #FF6B2B, transparent);
+    background: linear-gradient(90deg, transparent, #FF2E97, transparent);
     animation: slideGlow 3s ease-in-out infinite;
 }
 @keyframes slideGlow {
@@ -226,7 +228,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .logo-icon {
     font-size: 2.2rem;
-    color: #FF6B2B;
+    color: #FF2E97;
     animation: pulse 2s ease-in-out infinite;
     line-height: 1;
 }
@@ -236,10 +238,10 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .header-text { flex: 1; }
 .app-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Press Start 2P', monospace;
     font-size: 2rem;
     font-weight: 700;
-    color: #F0F0F0;
+    color: #F2E9FF;
     margin: 0;
     line-height: 1.1;
 }
@@ -247,17 +249,17 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     color: #888;
     font-size: 0.85rem;
     margin: 4px 0 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'VT323', monospace;
 }
 .header-badge {
     margin-left: auto;
-    background: #1A1A1A;
-    border: 1px solid rgba(255,107,43,0.2);
-    color: #FF6B2B;
+    background: #160A33;
+    border: 1px solid rgba(255,46,151,0.2);
+    color: #FF2E97;
     padding: 4px 14px;
-    border-radius: 20px;
+    border-radius: 0;
     font-size: 0.75rem;
-    font-family: 'Space Grotesk', monospace;
+    font-family: 'Press Start 2P', monospace;
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
@@ -266,10 +268,10 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 .sidebar-section-label {
     font-size: 0.65rem;
     letter-spacing: 2px;
-    color: #FF6B2B;
+    color: #FF2E97;
     font-weight: 600;
     margin: 16px 0 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'VT323', monospace;
     text-transform: uppercase;
 }
 
@@ -278,9 +280,9 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, #0D1F0D, #1A1A1A);
-    border: 1px solid rgba(46,204,113,0.2);
-    border-radius: 8px;
+    background: linear-gradient(135deg, #0B2A12, #160A33);
+    border: 1px solid rgba(57,255,20,0.2);
+    border-radius: 0;
     padding: 10px 12px;
     margin: 4px 0;
     animation: fadeInUp 0.4s ease;
@@ -290,7 +292,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     to { opacity: 1; transform: translateY(0); }
 }
 .success-icon {
-    color: #2ECC71;
+    color: #39FF14;
     font-size: 1.1rem;
     font-weight: 700;
     flex-shrink: 0;
@@ -315,10 +317,10 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     display: flex;
     align-items: center;
     padding: 8px 4px;
-    border-bottom: 1px solid #1A1A1A;
+    border-bottom: 1px solid #160A33;
     gap: 8px;
 }
-.doc-icon { color: #FF6B2B; font-size: 0.7rem; flex-shrink: 0; }
+.doc-icon { color: #FF2E97; font-size: 0.7rem; flex-shrink: 0; }
 .doc-name {
     color: #CCC;
     font-size: 0.82rem;
@@ -334,14 +336,14 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     text-align: center;
     padding: 14px 8px;
     background: #111;
-    border: 1px solid #1E1E1E;
-    border-radius: 10px;
+    border: 1px solid #1C0D40;
+    border-radius: 0;
 }
 .stat-value {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #FF6B2B;
-    font-family: 'Space Grotesk', sans-serif;
+    color: #FF2E97;
+    font-family: 'Press Start 2P', monospace;
     line-height: 1.2;
 }
 .stat-label {
@@ -350,7 +352,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 2px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'VT323', monospace;
 }
 
 /* ── Empty state ── */
@@ -360,14 +362,14 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 .empty-icon {
     font-size: 3rem;
-    color: #FF6B2B;
+    color: #FF2E97;
     animation: pulse 2s ease-in-out infinite;
     margin-bottom: 16px;
     display: inline-block;
 }
 .empty-title {
-    color: #F0F0F0;
-    font-family: 'Space Grotesk', sans-serif;
+    color: #F2E9FF;
+    font-family: 'Press Start 2P', monospace;
     font-size: 1.3rem;
     font-weight: 600;
     margin: 0 0 8px;
@@ -385,33 +387,33 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     margin-top: 20px;
 }
 .chip {
-    background: #1A1A1A;
-    border: 1px solid #2A2A2A;
+    background: #160A33;
+    border: 1px solid #2A1650;
     color: #888;
     padding: 8px 16px;
-    border-radius: 20px;
+    border-radius: 0;
     font-size: 0.8rem;
     cursor: default;
     transition: all 0.2s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'VT323', monospace;
 }
 .chip:hover {
-    border-color: #FF6B2B;
-    color: #FF6B2B;
+    border-color: #FF2E97;
+    color: #FF2E97;
 }
 
 /* ── Chunk cards ── */
 .chunk-card {
     background: #111;
     border: 1px solid #222;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 12px;
     margin: 6px 0;
     transition: all 0.2s;
     cursor: default;
 }
 .chunk-card:hover {
-    border-color: rgba(255,107,43,0.2);
+    border-color: rgba(255,46,151,0.2);
     transform: translateY(-1px);
 }
 .chunk-header {
@@ -420,9 +422,9 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     gap: 6px;
 }
 .chunk-rank {
-    color: #FF6B2B;
+    color: #FF2E97;
     font-weight: 700;
-    font-family: 'Space Grotesk', monospace;
+    font-family: 'Press Start 2P', monospace;
     font-size: 0.8rem;
     flex-shrink: 0;
 }
@@ -434,15 +436,15 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.sim-high { color: #2ECC71; font-size: 0.75rem; font-weight: 600; }
-.sim-mid  { color: #F39C12; font-size: 0.75rem; font-weight: 600; }
+.sim-high { color: #39FF14; font-size: 0.75rem; font-weight: 600; }
+.sim-mid  { color: #FFE600; font-size: 0.75rem; font-weight: 600; }
 .sim-low  { color: #888;    font-size: 0.75rem; font-weight: 600; }
 .chunk-preview {
     color: #666;
     font-size: 0.78rem;
     line-height: 1.5;
     margin: 8px 0;
-    border-left: 2px solid #2A2A2A;
+    border-left: 2px solid #2A1650;
     padding-left: 8px;
 }
 .chunk-footer {
@@ -454,13 +456,13 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 .processing-card {
     background: #111;
     border: 1px solid #222;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 16px;
     margin: 8px 0;
 }
 .proc-title {
-    color: #F0F0F0;
-    font-family: 'Space Grotesk', sans-serif;
+    color: #F2E9FF;
+    font-family: 'Press Start 2P', monospace;
     font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 12px;
@@ -469,23 +471,23 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     color: #444;
     font-size: 0.8rem;
     padding: 4px 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'VT323', monospace;
     transition: color 0.3s;
 }
 .proc-step.active {
-    color: #FF6B2B;
+    color: #FF2E97;
     animation: pulse 1.2s ease-in-out infinite;
 }
 .proc-step.done {
-    color: #2ECC71;
+    color: #39FF14;
 }
 
 /* ── Right panel section heading ── */
 .panel-heading {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Press Start 2P', monospace;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #F0F0F0;
+    color: #F2E9FF;
     margin-bottom: 4px;
 }
 .panel-caption {
@@ -496,22 +498,20 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 </style>
 """, unsafe_allow_html=True)
 
+# Retro arcade theme: loads after the base CSS so it wins.
+inject_theme()
+
 # ─────────────────────────────────────────────
 # Animated Header
 # ─────────────────────────────────────────────
-st.markdown("""
-<div class="app-header">
-    <div class="header-glow"></div>
-    <div class="header-content">
-        <div class="logo-icon">◈</div>
-        <div class="header-text">
-            <h1 class="app-title">DocuMind</h1>
-            <p class="app-subtitle">Upload documents · Ask questions · Get cited answers</p>
-        </div>
-        <div class="header-badge">RAG · gpt-oss · pgvector</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+arcade_hero(
+    title="DOCUMIND",
+    subtitle="RAG DOCUMENT QUEST",
+    tagline="Feed it your PDFs, ask anything, and get answers with citations. "
+            "If the answer isn't in your documents, it tells you.",
+    status_html='<span class="hud-chip">RAG &middot; GPT-OSS &middot; PGVECTOR</span>',
+    stickers=("cabinet", "coin", "heart", "cat", "star"),
+)
 
 # ─────────────────────────────────────────────
 # Helper: Fetch live stats
@@ -546,13 +546,13 @@ chunk_count = get_chunk_count(tuple(d["filename"] for d in visible_docs))
 # ─────────────────────────────────────────────
 s1, s2, s3, s4 = st.columns(4)
 with s1:
-    st.markdown(f"""<div class="stat-item"><div class="stat-value">{doc_count}</div><div class="stat-label">Documents</div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="stat-item"><div class="stat-value">{doc_count}</div><div class="stat-label">Docs Loaded</div></div>""", unsafe_allow_html=True)
 with s2:
-    st.markdown(f"""<div class="stat-item"><div class="stat-value">{chunk_count}</div><div class="stat-label">Total Chunks</div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="stat-item"><div class="stat-value">{chunk_count}</div><div class="stat-label">Chunks</div></div>""", unsafe_allow_html=True)
 with s3:
-    st.markdown(f"""<div class="stat-item"><div class="stat-value">{st.session_state.questions_asked}</div><div class="stat-label">Questions Asked</div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="stat-item"><div class="stat-value">{st.session_state.questions_asked}</div><div class="stat-label">Score</div></div>""", unsafe_allow_html=True)
 with s4:
-    st.markdown("""<div class="stat-item"><div class="stat-value">gpt-oss</div><div class="stat-label">LLM Model</div></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="stat-item"><div class="stat-value">gpt-oss</div><div class="stat-label">Engine</div></div>""", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # Sidebar — PDF Upload
@@ -677,8 +677,9 @@ with st.sidebar:
                 <span class="doc-date">{label} · {date_str}</span>
             </div>""", unsafe_allow_html=True)
     else:
-        st.markdown('<p style="color:#444; font-size:0.8rem;">No documents yet</p>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#555; font-size:0.72rem; margin-top:8px;">Your uploads are only visible in this browser session. Please don\'t upload confidential documents to this public demo.</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#B8ADD6; font-size:0.8rem;">No documents yet</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#B8ADD6; font-size:0.72rem; margin-top:8px;">Your uploads are only visible in this browser session. Please don\'t upload confidential documents to this public demo.</p>', unsafe_allow_html=True)
+    energy_can_egg(st)
 
 # ─────────────────────────────────────────────
 # Main Chat + Chunks Panel
@@ -778,4 +779,4 @@ with col2:
                 <div class="chunk-footer">chunk #{cidx + 1}</div>
             </div>""", unsafe_allow_html=True)
     else:
-        st.markdown('<p style="color:#444; font-size:0.8rem; text-align:center; margin-top:24px;">Ask a question to see retrieved chunks here</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#B8ADD6; font-size:0.8rem; text-align:center; margin-top:24px;">Ask a question to see retrieved chunks here</p>', unsafe_allow_html=True)

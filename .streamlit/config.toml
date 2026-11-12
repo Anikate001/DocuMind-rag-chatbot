@@ -5,3 +5,7 @@ backgroundColor = "#0B0420"
 secondaryBackgroundColor = "#160A33"
 textColor = "#F2E9FF"
 font = "monospace"
+
+[server]
+# Matches MAX_UPLOAD_MB in config.py, so oversized PDFs are refused before upload
+maxUploadSize = 10
